@@ -1,9 +1,9 @@
 #pragma once
 
-#include "DirectoryWatcher/Public/IDirectoryWatcher.h"
+#include "IDirectoryWatcher.h"
 #include "WaapiAssetSynchronizer.h"
 #include "WwiseWorkUnitParser.h"
-#include "ContentBrowser/Public/ContentBrowserDelegates.h"
+#include "ContentBrowserDelegates.h"
 
 class AkAssetManagementManager
 {

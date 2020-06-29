@@ -13,16 +13,16 @@
 //#include "AkSwitchValue.h"
 //#include "AkTrigger.h"
 #include "AkWaapiUtils.h"
-#include "AssetRegistry/Public/AssetRegistryModule.h"
-#include "AssetTools/Public/AssetToolsModule.h"
+#include "AssetRegistryModule.h"
+#include "AssetToolsModule.h"
 #include "Async/Async.h"
-#include "ContentBrowser/Public/ContentBrowserModule.h"
-#include "ContentBrowser/Public/IContentBrowserSingleton.h"
+#include "ContentBrowserModule.h"
+#include "IContentBrowserSingleton.h"
 #include "Editor.h"
 #include "Misc/MessageDialog.h"
 #include "Misc/RedirectCollector.h"
 #include "Misc/ScopedSlowTask.h"
-#include "UnrealEd/Public/FileHelpers.h"
+#include "FileHelpers.h"
 
 #define LOCTEXT_NAMESPACE "AkAssetFactory"
 
@@ -704,19 +704,19 @@ void WaapiAssetSynchronizer::onAssetRenamed(const FAssetData& NewAssetData, cons
 
 	if (!renameSucceeded)
 	{
-		const FFormatNamedArguments Args
+		/*const FFormatNamedArguments Args
 		{
 			{ TEXT("OldName"), FText::FromString(oldFileName) },
 			{ TEXT("NewName"), FText::FromString(newFileName) },
 			{ TEXT("Reason"), FText::FromString(setNameErrorMessage) }
 		};
 
-		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkWaapiAssetSynchronizer", "CannotRenameAsset", "Cannot rename asset from '{OldName}' to '{NewName}'. Reason: {Reason}."), Args));
+		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkWaapiAssetSynchronizer", "CannotRenameAsset", "Cannot rename asset from '{OldName}' to '{NewName}'. Reason: {Reason}."), Args));*/
 	}
 
 	if (!moveSucceeded)
 	{
-		const FFormatNamedArguments Args
+		/*const FFormatNamedArguments Args
 		{
 			{ TEXT("OldName"), FText::FromString(oldFileName) },
 			{ TEXT("OldPath"), FText::FromString(oldDirectory) },
@@ -724,7 +724,7 @@ void WaapiAssetSynchronizer::onAssetRenamed(const FAssetData& NewAssetData, cons
 			{ TEXT("Reason"), FText::FromString(moveErrorMessage) }
 		};
 
-		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkWaapiAssetSynchronizer", "CannotMoveAsset", "Cannot move '{OldName}' from '{OldPath}' to '{NewPath}'. Reason: {Reason}."), Args));
+		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkWaapiAssetSynchronizer", "CannotMoveAsset", "Cannot move '{OldName}' from '{OldPath}' to '{NewPath}'. Reason: {Reason}."), Args));*/
 	}
 
 	ignoreRenames.Add(assetInstance->ID);

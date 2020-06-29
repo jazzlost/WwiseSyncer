@@ -14,11 +14,11 @@
 //#include "AkTrigger.h"
 #include "AkUnrealHelper.h"
 #include "AkWaapiClient.h"
-#include "AssetRegistry/Public/AssetRegistryModule.h"
-#include "AssetTools/Public/AssetToolsModule.h"
+#include "AssetRegistryModule.h"
+#include "AssetToolsModule.h"
 #include "Async/Async.h"
-#include "ContentBrowser/Public/ContentBrowserModule.h"
-#include "ContentBrowser/Public/IContentBrowserSingleton.h"
+#include "ContentBrowserModule.h"
+#include "IContentBrowserSingleton.h"
 #include "HAL/FileManager.h"
 #include "HAL/PlatformFilemanager.h"
 #include "Misc/FeedbackContext.h"
@@ -27,8 +27,8 @@
 #include "Misc/RedirectCollector.h"
 #include "Misc/ScopedSlowTask.h"
 #include "AkToolBehavior.h"
-#include "UnrealEd/Public/ObjectTools.h"
-#include "UnrealEd/Public/PackageTools.h"
+#include "ObjectTools.h"
+#include "PackageTools.h"
 #include "GenericPlatformFile.h"
 
 #define LOCTEXT_NAMESPACE "AkAudio"
@@ -241,7 +241,7 @@ void AkAssetDatabase::RenameAsset(const UClass* Klass, const FGuid& Id, const FS
 	auto parentPath = RelativePath;
 	parentPath.RemoveFromEnd(Name);
 
-	auto AssetPackagePath = UPackageTools::SanitizePackageName(FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), parentPath));
+	auto AssetPackagePath = PackageTools::SanitizePackageName(FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), parentPath));
 	auto AssetPath = FPaths::Combine(AssetPackagePath, AssetName + TEXT(".") + AssetName);
 
 	auto assetInstancePtr = AudioTypeMap.Find(Id);
@@ -310,7 +310,7 @@ UObject* AkAssetDatabase::CreateOrRenameAsset(const UClass* Klass, const FGuid& 
 
 	parentPath.RemoveFromEnd(Name);
 
-	auto AssetPackagePath = UPackageTools::SanitizePackageName(FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), parentPath));
+	auto AssetPackagePath = PackageTools::SanitizePackageName(FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), parentPath));
 	auto AssetPath = FPaths::Combine(AssetPackagePath, AssetName + TEXT(".") + AssetName);
 
 	auto assetInstancePtr = AudioTypeMap.Find(Id);
@@ -384,7 +384,7 @@ UObject* AkAssetDatabase::CreateOrRenameAsset(const UClass* Klass, const FGuid& 
 //	if (findResults.Num() <= 0)
 //		return;
 //
-//	auto AssetPackagePath = UPackageTools::SanitizePackageName(FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), Path));
+//	auto AssetPackagePath = PackageTools::SanitizePackageName(FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), Path));
 //
 //	TArray<FAssetRenameData> assetsToRename;
 //	for (auto& assetData : findResults)
@@ -537,10 +537,10 @@ void AkAssetDatabase::MoveWorkUnit(const FString& OldWorkUnitPath, const FString
 		allAssets.Emplace(entry.Value);
 	}
 
-	FString sanitizedOldWorkUnitPath = UPackageTools::SanitizePackageName(OldWorkUnitPath);
+	FString sanitizedOldWorkUnitPath = PackageTools::SanitizePackageName(OldWorkUnitPath);
 	auto workUnitOldPackagePath = FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), sanitizedOldWorkUnitPath);
 
-	FString sanitizedNewWorkUnitPath = UPackageTools::SanitizePackageName(NewWorkUnitPath);
+	FString sanitizedNewWorkUnitPath = PackageTools::SanitizePackageName(NewWorkUnitPath);
 	auto workUnitNewPackagePath = FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), sanitizedNewWorkUnitPath);
 
 	TArray<FString> pathParts;
@@ -749,7 +749,7 @@ void AkAssetDatabase::AssignBank()
 //	auto localizedAssetPath = AkUnrealHelper::GetLocalizedAssetPackagePath();
 //	for (auto& entry : akAudioEvent->LocalizedPlatformAssetDataMap)
 //	{
-//		auto localizedPackagePath = UPackageTools::SanitizePackageName(FPaths::Combine(localizedAssetPath, entry.Key, parentPath));
+//		auto localizedPackagePath = PackageTools::SanitizePackageName(FPaths::Combine(localizedAssetPath, entry.Key, parentPath));
 //		auto newLocalizedAssetPath = FPaths::Combine(localizedPackagePath, AssetName + TEXT(".") + AssetName);
 //		entry.Value.LoadSynchronous();
 //		assetsToRename.Emplace(entry.Value.ToSoftObjectPath(), FSoftObjectPath(newLocalizedAssetPath));
@@ -859,13 +859,13 @@ void AkAssetDatabase::onAssetAdded(const FAssetData& NewAssetData)
 
 				if (!addSucceeded)
 				{
-					const FFormatNamedArguments Args
-					{
-						{ TEXT("NewPath"), FText::FromString(newPath) },
-						{ TEXT("Reason"), FText::FromString(addErrorMessage) }
-					};
+					//const FFormatNamedArguments Args
+					//{
+					//	{ TEXT("NewPath"), FText::FromString(newPath) },
+					//	{ TEXT("Reason"), FText::FromString(addErrorMessage) }
+					//};
 
-					FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkAssetDatabase", "CannotCreateAsset", "Cannot create asset in '{NewPath}'. Reason: {Reason}."), Args));
+					//FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkAssetDatabase", "CannotCreateAsset", "Cannot create asset in '{NewPath}'. Reason: {Reason}."), Args));
 					CopiedAssetsToUndo.Add(NewAssetData);
 					return;
 				}
@@ -966,25 +966,25 @@ void AkAssetDatabase::onAssetRenamed(const FAssetData& NewAssetData, const FStri
 
 	if (!moveSucceeded)
 	{
-		const FFormatNamedArguments Args
-		{
-			{ TEXT("OldName"), FText::FromString(oldFileName) },
-			{ TEXT("OldPath"), FText::FromString(oldDirectory) },
-			{ TEXT("NewPath"), FText::FromString(newDirectory) },
-			{ TEXT("Reason"), FText::FromString(moveErrorMessage) }
-		};
+		//const FFormatNamedArguments Args
+		//{
+		//	{ TEXT("OldName"), FText::FromString(oldFileName) },
+		//	{ TEXT("OldPath"), FText::FromString(oldDirectory) },
+		//	{ TEXT("NewPath"), FText::FromString(newDirectory) },
+		//	{ TEXT("Reason"), FText::FromString(moveErrorMessage) }
+		//};
 
-		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkAssetDatabase", "CannotMoveAsset", "Cannot move '{OldName}' from '{OldPath}' to '{NewPath}'. Reason: {Reason}."), Args));
+		//FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkAssetDatabase", "CannotMoveAsset", "Cannot move '{OldName}' from '{OldPath}' to '{NewPath}'. Reason: {Reason}."), Args));
 	}
 	else if (invalidName)
 	{
-		const FFormatNamedArguments Args
-		{
-			{ TEXT("NewName"), FText::FromString(newFileName) },
-			{ TEXT("InvalidChars"), FText::FromString(InvalidCharacters) }
-		};
+		//const FFormatNamedArguments Args
+		//{
+		//	{ TEXT("NewName"), FText::FromString(newFileName) },
+		//	{ TEXT("InvalidChars"), FText::FromString(InvalidCharacters) }
+		//};
 
-		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkAssetDatabase", "InvalidAssetName", "Invalid characters found in the new name '{NewName}'. The name must start with a letter and must not contains these characters\n\n{InvalidChars}"), Args));
+		//FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkAssetDatabase", "InvalidAssetName", "Invalid characters found in the new name '{NewName}'. The name must start with a letter and must not contains these characters\n\n{InvalidChars}"), Args));
 	}
 
 	ignoreRenames.Add(assetInstance->ID);

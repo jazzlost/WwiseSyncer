@@ -12,7 +12,7 @@
 #include "AkAssetDatabase.h"
 //#include "AssetManagement/WwiseConsoleAkSoundDataBuilder.h"
 #include "Misc/MessageDialog.h"
-#include "SlateCore/Public/Widgets/SWindow.h"
+#include "Widgets/SWindow.h"
 //#include "UI/SLegacyGenerateSoundBanks.h"
 
 //bool AkLegacyToolBehavior::CreateSoundDataWidget(const TSharedRef<SWindow>& Window, TArray<TWeakObjectPtr<UAkAudioBank>>* SoundBanks, bool ProjectSave)
@@ -144,14 +144,14 @@ bool AkLegacyToolBehavior::AkAssetFactory_ValidNewAssetPath(FName Name, const FS
 
 	if (AssetPath.StartsWith(AkUnrealHelper::GetBaseAssetPackagePath(), ESearchCase::IgnoreCase))
 	{
-		const FFormatNamedArguments Args
-		{
-			{ TEXT("ObjectName"), FText::FromName(Name) },
-			{ TEXT("PathName"), FText::FromString(AssetPath) },
-			{ TEXT("WwisePath"), FText::FromString(assetPackagePath) }
-		};
+		//const FFormatNamedArguments Args
+		//{
+		//	{ TEXT("ObjectName"), FText::FromName(Name) },
+		//	{ TEXT("PathName"), FText::FromString(AssetPath) },
+		//	{ TEXT("WwisePath"), FText::FromString(assetPackagePath) }
+		//};
 
-		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkAssetFactory", "CannotCreateAssetInPathLegacy", "Cannot create new asset '{ObjectName}' in path '{PathName}'. You can't put assets under '{WwisePath}' folder."), Args));
+		//FMessageDialog::Open(EAppMsgType::Ok, FText::Format(NSLOCTEXT("AkAssetFactory", "CannotCreateAssetInPathLegacy", "Cannot create new asset '{ObjectName}' in path '{PathName}'. You can't put assets under '{WwisePath}' folder."), Args));
 		return false;
 	}
 

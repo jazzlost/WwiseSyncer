@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Public/Containers/Array.h"
-#include "Core/Public/Templates/SharedPointer.h"
+#include "Containers/Array.h"
+#include "Templates/SharedPointer.h"
 
 //#include "AssetManagement/AkSoundDataBuilder.h"
 
