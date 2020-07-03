@@ -408,14 +408,16 @@ class FAudiokineticToolsModule : public IAudiokineticTools
 
 		AssetRegistryModule.Get().OnFilesLoaded().AddRaw(this, &FAudiokineticToolsModule::OnAssetRegistryFilesLoaded);
 
-		AkAssetDatabase& AssetDatabase = AkAssetDatabase::Get();
-		bool bInited = AssetDatabase.GetAssetManagementManager()->IsInited();
-		if (!bInited)
-			AssetDatabase.GetAssetManagementManager()->Init();
-		assetManagementManager = AssetDatabase.GetAssetManagementManager();
+		UAkSettings* AkSettings = GetMutableDefault<UAkSettings>();
 
-
-
+		if (AkSettings->bEnableAutoAssetSync)
+		{
+			AkAssetDatabase& AssetDatabase = AkAssetDatabase::Get();
+			bool bInited = AssetDatabase.GetAssetManagementManager()->IsInited();
+			if (!bInited)
+				AssetDatabase.GetAssetManagementManager()->Init();
+			assetManagementManager = AssetDatabase.GetAssetManagementManager();
+		}
 
 		FEditorDelegates::EndPIE.AddRaw(this, &FAudiokineticToolsModule::OnEndPIE);
 
@@ -531,6 +533,9 @@ class FAudiokineticToolsModule : public IAudiokineticTools
 	void OnAssetRegistryFilesLoaded()
 	{
 		UAkSettings* AkSettings = GetMutableDefault<UAkSettings>();
+		if (!AkSettings->bEnableAutoAssetSync)
+			return;
+
 		auto* CurrentProject = IProjectManager::Get().GetCurrentProject();
 
 		bool doAssetSync = true;

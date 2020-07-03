@@ -39,6 +39,8 @@ private:
 
 	void Sync(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects);
 
+	void Migrate(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects);
+
 	/** Map containing the Event names and associated Playing IDs related to events currently being previewed */
 	TMap<FString, AkPlayingID>	m_PlayingAkEvents;
 
