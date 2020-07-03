@@ -11,7 +11,7 @@
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Misc/ScopeLock.h"
 #include "WwiseSyncer/AkAssetDatabase.h"
-
+#include "AkSettings.h"
 #define LOCTEXT_NAMESPACE "AssetTypeActions"
 
 FCriticalSection FAssetTypeActions_AkAudioEvent::m_PlayingAkEventsCriticalSection;
@@ -68,6 +68,16 @@ void FAssetTypeActions_AkAudioEvent::GetActions( const TArray<UObject*>& InObjec
 			FExecuteAction::CreateSP(this, &FAssetTypeActions_AkAudioEvent::Sync, Events),
 			FCanExecuteAction()
 		)
+	);
+
+		MenuBuilder.AddMenuEntry(
+			LOCTEXT("AkAudioEvent_Migrate", "Migrate"),
+			LOCTEXT("AkAudioEvent_MigrateTooltip", "Migrate To New Ak Asset"),
+			FSlateIcon(),
+			FUIAction(
+				FExecuteAction::CreateSP(this, &FAssetTypeActions_AkAudioEvent::Migrate, Events),
+				FCanExecuteAction()
+			)
 	);
 }
 
@@ -174,11 +184,29 @@ void FAssetTypeActions_AkAudioEvent::StopEvent(TArray<TWeakObjectPtr<UAkAudioEve
 
 void FAssetTypeActions_AkAudioEvent::Sync(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects)
 {
+	UAkSettings* AkSettings = GetMutableDefault<UAkSettings>();
+	if (!AkSettings->bEnableAutoAssetSync)
+		return;
+
 	AkAssetDatabase& AssetDataBase = AkAssetDatabase::Get();
 	AkAssetManagementManager* AssetManager = AssetDataBase.GetAssetManagementManager();
 	if(AssetManager)
 		AssetManager->DoAssetSynchronization();
 }
+
+void FAssetTypeActions_AkAudioEvent::Migrate(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects)
+{
+	UAkSettings* AkSettings = GetMutableDefault<UAkSettings>();
+	if (AkSettings->bEnableAutoAssetSync)
+		return;
+
+	AkAssetDatabase& AssetDataBase = AkAssetDatabase::Get();
+	AkAssetManagementManager* AssetManager = AssetDataBase.GetAssetManagementManager();
+
+	if (AssetManager)
+		AssetManager->DoAssetMigration();
+}
+
 
 
 #undef LOCTEXT_NAMESPACE

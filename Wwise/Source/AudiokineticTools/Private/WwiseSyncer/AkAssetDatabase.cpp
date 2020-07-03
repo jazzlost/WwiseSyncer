@@ -697,12 +697,19 @@ bool AkAssetDatabase::CanBeDropped(const FAssetData& AssetData, FName PackagePat
 
 void AkAssetDatabase::AssignBank()
 {
+	UAkSettings* AkSettings = GetMutableDefault<UAkSettings>();
+
+	if (!AkSettings->bEnableAutoAssetSync)
+		return;
+
 	if (BankToEventsMap.Num() <= 0)
 		return;
 
 	for (auto Map : BankToEventsMap)
 	{
 		auto BankPtr = BankMap.Find(Map.Key);
+		if (BankPtr == nullptr)
+			return;
 		if (*BankPtr)
 		{
 			auto BankRef = *BankPtr;

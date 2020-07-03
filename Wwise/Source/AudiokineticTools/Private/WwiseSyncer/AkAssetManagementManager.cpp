@@ -7,7 +7,7 @@
 #include "AkWaapiClient.h"
 #include "AkAssetDatabase.h"
 #include "CreateAkAssetsVisitor.h"
-//#include "AssetMigrationVisitor.h"
+#include "AssetMigrationVisitor.h"
 #include "ContentBrowserModule.h"
 #include "Core/Public/Modules/ModuleManager.h"
 #include "DirectoryWatcher/Public/DirectoryWatcherModule.h"
@@ -91,34 +91,34 @@ void AkAssetManagementManager::DoAssetSynchronization()
 	//UE_LOG(LogAkAudio, Display, TEXT("Wwise Asset Synchronization took %f seconds."), FPlatformTime::ToSeconds64(end - start));
 }
 
-//void AkAssetManagementManager::DoAssetMigration()
-//{
-//	ClearSoundBanksForMigration();
-//
-//	if (!isInited)
-//	{
-//		Init();
-//	}
-//
-//	waapiAssetSync.Uninit();
-//
-//	AssetMigrationVisitor visitor;
-//	workUnitParser.SetVisitor(&visitor);
-//	workUnitParser.ForceParse();
-//	workUnitParser.SetVisitor(nullptr);
-//
-//	waapiAssetSync.Init();
-//
-//	FNotificationInfo Info(LOCTEXT("AkAssetManagementManager", "Wwise sound data migration completed!"));
-//
-//	Info.Image = FAkAudioStyle::GetBrush(TEXT("AudiokineticTools.AkPickerTabIcon"));
-//	Info.bFireAndForget = true;
-//	Info.FadeOutDuration = 0.6f;
-//	Info.ExpireDuration = 4.6f;
-//	FSlateNotificationManager::Get().AddNotification(Info);
-//
-//	GEditor->PlayEditorSound(TEXT("/Engine/EditorSounds/Notifications/CompileSuccess_Cue.CompileSuccess_Cue"));
-//}
+void AkAssetManagementManager::DoAssetMigration()
+{
+	//ClearSoundBanksForMigration();
+
+	if (!isInited)
+	{
+		Init();
+	}
+
+	waapiAssetSync.Uninit();
+
+	AssetMigrationVisitor visitor;
+	workUnitParser.SetVisitor(&visitor);
+	workUnitParser.ForceParse();
+	workUnitParser.SetVisitor(nullptr);
+
+	waapiAssetSync.Init();
+
+	FNotificationInfo Info(LOCTEXT("AkAssetManagementManager", "Wwise sound data migration completed!"));
+
+	Info.Image = FAkAudioStyle::GetBrush(TEXT("AudiokineticTools.AkPickerTabIcon"));
+	Info.bFireAndForget = true;
+	Info.FadeOutDuration = 0.6f;
+	Info.ExpireDuration = 4.6f;
+	FSlateNotificationManager::Get().AddNotification(Info);
+
+	GEditor->PlayEditorSound(TEXT("/Engine/EditorSounds/Notifications/CompileSuccess_Cue.CompileSuccess_Cue"));
+}
 
 //void AkAssetManagementManager::ClearSoundBanksForMigration()
 //{

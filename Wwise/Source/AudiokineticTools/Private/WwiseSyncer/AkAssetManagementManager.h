@@ -12,7 +12,7 @@ public:
 	void Uninit();
 
 	void DoAssetSynchronization();
-	//void DoAssetMigration();
+	void DoAssetMigration();
 
 	bool IsInited() const { return isInited; }
 
