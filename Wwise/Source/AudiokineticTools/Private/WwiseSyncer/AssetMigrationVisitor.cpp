@@ -155,7 +155,6 @@ void AssetMigrationVisitor::End()
 {
 	//Super::End();
 
-	//AkAssetDatabase::Get().FixUpRedirectors(AkUnrealHelper::GetBaseAssetPackagePath());
 
 	for (auto MigrateEvent : MigrateEvents)
 	{
@@ -199,6 +198,8 @@ void AssetMigrationVisitor::End()
 			}
 		}
 	}
+
+	AkAssetDatabase::Get().FixUpRedirectors(AkUnrealHelper::GetBaseAssetPackagePath());
 
 	if (packagesToSave.Num() > 0)
 	{
