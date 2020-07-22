@@ -718,14 +718,13 @@ void AkAssetDatabase::AssignBank()
 				for (auto EventGuid : Map.Value)
 				{
 					auto EventPtr = EventMap.Find(EventGuid);
-					if (EventPtr && *EventPtr)
+					if (EventRef)
 					{
-						auto EventRef = *EventPtr;
-						if (EventRef && EventRef->RequiredBank == nullptr)
+						if (EventRef->RequiredBank == nullptr || EventRef->RequiredBank != BankRef)
 						{
-							EventRef->RequiredBank = BankRef;
 							EventRef->GetOutermost()->MarkPackageDirty();
 						}
+						EventRef->RequiredBank = BankRef;
 					}
 				}
 			}
