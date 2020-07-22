@@ -721,9 +721,10 @@ void AkAssetDatabase::AssignBank()
 					if (EventPtr && *EventPtr)
 					{
 						auto EventRef = *EventPtr;
-						if (EventRef)
+						if (EventRef && EventRef->RequiredBank == nullptr)
 						{
 							EventRef->RequiredBank = BankRef;
+							EventRef->GetOutermost()->MarkPackageDirty();
 						}
 					}
 				}
