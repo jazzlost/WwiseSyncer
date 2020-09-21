@@ -705,6 +705,16 @@ void AkAssetDatabase::AssignBank()
 	if (BankToEventsMap.Num() <= 0)
 		return;
 
+void AkAssetDatabase::AssignBank()
+{
+	UAkSettings* AkSettings = GetMutableDefault<UAkSettings>();
+
+	if (!AkSettings->bEnableAutoAssetSync)
+		return;
+
+	if (BankToEventsMap.Num() <= 0)
+		return;
+
 	for (auto Map : BankToEventsMap)
 	{
 		auto BankPtr = BankMap.Find(Map.Key);
@@ -718,13 +728,18 @@ void AkAssetDatabase::AssignBank()
 				for (auto EventGuid : Map.Value)
 				{
 					auto EventPtr = EventMap.Find(EventGuid);
-					if (EventRef)
+					if (EventPtr && *EventPtr)
 					{
-						if (EventRef->RequiredBank == nullptr || EventRef->RequiredBank != BankRef)
+						auto EventRef = *EventPtr;
+						if (EventRef)
 						{
-							EventRef->GetOutermost()->MarkPackageDirty();
+							if (EventRef->RequiredBank == nullptr || EventRef->RequiredBank != BankRef)
+							{
+								EventRef->RequiredBank = BankRef;
+								EventRef->GetOutermost()->MarkPackageDirty();
+							}
+
 						}
-						EventRef->RequiredBank = BankRef;
 					}
 				}
 			}
