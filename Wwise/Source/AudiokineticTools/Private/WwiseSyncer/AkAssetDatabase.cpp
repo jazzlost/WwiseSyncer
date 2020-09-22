@@ -705,16 +705,6 @@ void AkAssetDatabase::AssignBank()
 	if (BankToEventsMap.Num() <= 0)
 		return;
 
-void AkAssetDatabase::AssignBank()
-{
-	UAkSettings* AkSettings = GetMutableDefault<UAkSettings>();
-
-	if (!AkSettings->bEnableAutoAssetSync)
-		return;
-
-	if (BankToEventsMap.Num() <= 0)
-		return;
-
 	for (auto Map : BankToEventsMap)
 	{
 		auto BankPtr = BankMap.Find(Map.Key);

@@ -23,7 +23,7 @@ private:
 	void parseWorkUnitFile(const FString& WwuPath, const FString& RelativePath, EWwiseItemType::Type ItemType, bool ForceRefresh, bool ForceParse);
 	void parseWorkUnitXml(const FXmlFile& WorkUnitXml, const FString& WorkUnitPath, const FString& RelativePath, EWwiseItemType::Type ItemType);
 	void parseWorkUnitChildren(const FXmlNode* NodeToParse, const FString& WorkUnitPath, const FString& RelativePath, EWwiseItemType::Type ItemType);
-	void parseBankObjectRef(const FXmlNode* NodeToParse, FGuid BankGuid);
+	void parseBankObjectRef(FString SoundBankInfoFilePath);
 	void recurse(const FXmlNode* CurrentNode, const FString& WorkUnitPath, const FString& CurrentPath, EWwiseItemType::Type ItemType);
 	bool isStandAloneWwu(const FXmlFile& Wwu, EWwiseItemType::Type ItemType);
 

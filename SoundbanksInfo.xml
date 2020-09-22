@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SoundBanksInfo Platform="Windows" BasePlatform="Windows" SchemaVersion="11" SoundbankVersion="132">
+	<RootPaths>
+		<ProjectRoot>G:\Github\WwiseSyncer\WwiseProject\WwiseSyncer\</ProjectRoot>
+		<SourceFilesRoot>G:\Github\WwiseSyncer\WwiseProject\WwiseSyncer\.cache\Windows\</SourceFilesRoot>
+		<SoundBanksRoot>G:\Github\WwiseSyncer\Content\WwiseAudio\</SoundBanksRoot>
+		<ExternalSourcesInputFile></ExternalSourcesInputFile>
+		<ExternalSourcesOutputRoot>G:\Github\WwiseSyncer\WwiseProject\WwiseSyncer\GeneratedSoundBanks\Windows</ExternalSourcesOutputRoot>
+	</RootPaths>
+	<DialogueEvents/>
+	<StreamedFiles/>
+	<MediaFilesNotInAnyBank/>
+	<SoundBanks>
+		<SoundBank Id="1355168291" Language="SFX">
+			<ObjectPath>Init</ObjectPath>
+			<ShortName>Init</ShortName>
+			<Path>Init.bnk</Path>
+		</SoundBank>
+		<SoundBank Id="1496463648" Language="SFX">
+			<ObjectPath>\SoundBanks\Default Work Unit\Bank_02</ObjectPath>
+			<ShortName>Bank_02</ShortName>
+			<Path>Bank_02.bnk</Path>
+			<IncludedEvents>
+				<Event Id="26507446" Name="Event_04" ObjectPath="\Events\Default Work Unit\Event_04"/>
+			</IncludedEvents>
+		</SoundBank>
+		<SoundBank Id="1496463649" Language="SFX">
+			<ObjectPath>\SoundBanks\Default Work Unit\Bank_03</ObjectPath>
+			<ShortName>Bank_03</ShortName>
+			<Path>Bank_03.bnk</Path>
+			<IncludedEvents>
+				<Event Id="26507447" Name="Event_05" ObjectPath="\Events\Test\TestFolder\Event_05"/>
+				<Event Id="26507444" Name="Event_06" ObjectPath="\Events\Test\TestFolder\Event_06"/>
+				<Event Id="26507445" Name="Event_07" ObjectPath="\Events\Test\TestFolder\Event_07"/>
+				<Event Id="26507450" Name="Event_08" ObjectPath="\Events\Test02\Folder01\Event_08"/>
+				<Event Id="26507451" Name="Event_09" ObjectPath="\Events\Test02\Folder02\Event_09"/>
+			</IncludedEvents>
+		</SoundBank>
+		<SoundBank Id="1496463651" Language="SFX">
+			<ObjectPath>\SoundBanks\Default Work Unit\Bank_01</ObjectPath>
+			<ShortName>Bank_01</ShortName>
+			<Path>Bank_01.bnk</Path>
+			<IncludedEvents>
+				<Event Id="26507443" Name="Event_01" ObjectPath="\Events\Default Work Unit\Event_01"/>
+				<Event Id="26507440" Name="Event_02" ObjectPath="\Events\Default Work Unit\Event_02"/>
+				<Event Id="26507441" Name="Event_03" ObjectPath="\Events\Default Work Unit\Event_03"/>
+			</IncludedEvents>
+		</SoundBank>
+	</SoundBanks>
+</SoundBanksInfo>

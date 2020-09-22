@@ -320,27 +320,48 @@ void WwiseWorkUnitParser::parseWorkUnitChildren(const FXmlNode* NodeToParse, con
 	visitor->ExitChildrenList();
 }
 
-void WwiseWorkUnitParser::parseBankObjectRef(const FXmlNode* NodeToParse, FGuid BankGuid)
+void WwiseWorkUnitParser::parseBankObjectRef(FString SoundBankInfoFilePath)
 {
-	if (const FXmlNode* ChildrenNode = NodeToParse->FindChildNode(TEXT("ObjectInclusionList")))
+	//if (const FXmlNode* ChildrenNode = NodeToParse->FindChildNode(TEXT("ObjectInclusionList")))
+	//{
+	//	const FXmlNode* ObjectNode = ChildrenNode->FindChildNode(TEXT("ObjectRef"));
+
+	//	for (const FXmlNode* CurrentNode = ObjectNode; CurrentNode; CurrentNode = CurrentNode->GetNextNode())
+	//	{
+	//		FString CurrentTag = CurrentNode->GetTag();
+	//		if (CurrentTag == TEXT("ObjectRef"))
+	//		{
+	//			FString CurrentStringId = CurrentNode->GetAttribute(TEXT("ID"));
+	//			FGuid CurrentId;
+	//			FGuid::ParseExact(CurrentStringId, EGuidFormats::DigitsWithHyphensInBraces, CurrentId);
+
+	//			AkAssetDatabase& AssetDatabase = AkAssetDatabase::Get();
+	//			TArray<FGuid>& Events = AssetDatabase.BankToEventsMap.FindOrAdd(BankGuid);
+	//			Events.AddUnique(CurrentId);
+	//		}
+	//	}
+	//}
+
+	FXmlFile SoundBankInfoXml(SoundBankInfoFilePath);
+	
+	if (!SoundBankInfoXml.IsValid())
 	{
-		const FXmlNode* ObjectNode = ChildrenNode->FindChildNode(TEXT("ObjectRef"));
-
-		for (const FXmlNode* CurrentNode = ObjectNode; CurrentNode; CurrentNode = CurrentNode->GetNextNode())
-		{
-			FString CurrentTag = CurrentNode->GetTag();
-			if (CurrentTag == TEXT("ObjectRef"))
-			{
-				FString CurrentStringId = CurrentNode->GetAttribute(TEXT("ID"));
-				FGuid CurrentId;
-				FGuid::ParseExact(CurrentStringId, EGuidFormats::DigitsWithHyphensInBraces, CurrentId);
-
-				AkAssetDatabase& AssetDatabase = AkAssetDatabase::Get();
-				TArray<FGuid>& Events = AssetDatabase.BankToEventsMap.FindOrAdd(BankGuid);
-				Events.AddUnique(CurrentId);
-			}
-		}
+		return;
 	}
+
+	const FXmlNode* RootNode = SoundBankInfoXml.GetRootNode();
+	const FString& RootTag = RootNode->GetTag();
+	if (!RootNode || RootTag != TEXT("SoundBanksInfo"))
+	{
+		return;
+	}
+
+	const FXmlNode* ItemNode = RootNode->FindChildNode(TEXT("SoundBanks"));
+	if (!ItemNode)
+	{
+		return;
+	}
+
 }
 
 
