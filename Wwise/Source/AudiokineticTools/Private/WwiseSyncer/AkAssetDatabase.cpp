@@ -180,7 +180,7 @@ bool AkAssetDatabase::Add(const FGuid& Id, UAkAudioType* AudioType)
 		UAkAudioEvent* Event = EventsShortIdMap.FindOrAdd(audioEvent->ShortID);
 		if (Event == nullptr)
 		{
-			Event = audioEvent;
+			EventsShortIdMap[audioEvent->ShortID] = audioEvent;
 		}
 	}
 	else if (auto auxBus = Cast<UAkAuxBus>(AudioType))
