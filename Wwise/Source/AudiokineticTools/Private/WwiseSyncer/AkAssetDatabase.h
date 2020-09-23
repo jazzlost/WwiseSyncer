@@ -228,7 +228,9 @@ public:
 	//UAkInitBank* InitBank = nullptr;
 	
 	//Bank GUID To Ref Events GUID
-	TMap<FGuid, TArray<FGuid>> BankToEventsMap;
+	TMap<uint32, TSet<uint32>> BankToEventsMap;
+	TMap<uint32, UAkAudioEvent*> EventsShortIdMap;
+	TMap<uint32, UAkAudioBank*> BanksShortIdMap;
 
 private:
 	AkAssetDatabase();

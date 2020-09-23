@@ -18,11 +18,14 @@ bool WwiseWorkUnitParser::Parse()
 	}
 
 	auto projectFilePath = AkUnrealHelper::GetWwiseProjectPath();
+	auto WwiseAudioPath = AkUnrealHelper::GetSoundBankDirectory() + TEXT("/SoundbanksInfo.xml");
 
 	if (!FPaths::FileExists(projectFilePath))
 	{
 		return false;
 	}
+
+	parseBankObjectRef(WwiseAudioPath);
 
 	visitor->OnBeginParse();
 	projectRootFolder = FPaths::GetPath(projectFilePath) + TEXT("/");
@@ -33,6 +36,7 @@ bool WwiseWorkUnitParser::Parse()
 		parseFolders(EWwiseItemType::FolderNames[i], CurrentType);
 	}
 	visitor->End();
+
 
 	return true;
 }
@@ -255,7 +259,7 @@ void WwiseWorkUnitParser::parseWorkUnitChildren(const FXmlNode* NodeToParse, con
 		if (CurrentTag == TEXT("SoundBank"))
 		{
 			visitor->EnterBank(CurrentId, CurrentName, CurrentPath);
-			parseBankObjectRef(CurrentNode, CurrentId);
+			//parseBankObjectRef(CurrentNode, CurrentId);
 		}
 		//else if (CurrentTag == TEXT("AcousticTexture"))
 		//{
@@ -343,6 +347,12 @@ void WwiseWorkUnitParser::parseBankObjectRef(FString SoundBankInfoFilePath)
 	//}
 
 	FXmlFile SoundBankInfoXml(SoundBankInfoFilePath);
+	AkAssetDatabase& AssetDatabase = AkAssetDatabase::Get();
+
+	auto String2Int = [](FString& StringId) 
+	{
+		return FCString::Atoi(*StringId);
+	};
 	
 	if (!SoundBankInfoXml.IsValid())
 	{
@@ -356,12 +366,37 @@ void WwiseWorkUnitParser::parseBankObjectRef(FString SoundBankInfoFilePath)
 		return;
 	}
 
-	const FXmlNode* ItemNode = RootNode->FindChildNode(TEXT("SoundBanks"));
-	if (!ItemNode)
+	const FXmlNode* SoundBanksNode = RootNode->FindChildNode(TEXT("SoundBanks"));
+	if (!SoundBanksNode)
 	{
 		return;
 	}
 
+	const FXmlNode* BankNode = SoundBanksNode->GetFirstChildNode();
+	while (BankNode != nullptr)
+	{
+		if (BankNode->GetTag() == TEXT("SoundBank"))
+		{
+			FString BankId = BankNode->GetAttribute(TEXT("Id"));
+
+			const FXmlNode* EventsNode = BankNode->FindChildNode(TEXT("IncludedEvents"));
+			if (EventsNode != nullptr)
+			{
+				TSet<uint32>& EventIds = AssetDatabase.BankToEventsMap.FindOrAdd(String2Int(BankId));
+				const TArray<FXmlNode*>& Events = EventsNode->GetChildrenNodes();
+
+				for (int i = 0; i < Events.Num(); i++)
+				{
+					if (Events[i]->GetTag() == TEXT("Event"))
+					{
+						FString StringId = Events[i]->GetAttribute(TEXT("Id"));
+						EventIds.Add(String2Int(StringId));
+					}
+				}
+			}
+		}
+		BankNode = BankNode->GetNextNode();
+	}
 }
 
 
