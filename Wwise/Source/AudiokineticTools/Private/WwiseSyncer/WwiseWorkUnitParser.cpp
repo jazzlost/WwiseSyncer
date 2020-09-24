@@ -335,79 +335,65 @@ void WwiseWorkUnitParser::parseWorkUnitChildren(const FXmlNode* NodeToParse, con
 	visitor->ExitChildrenList();
 }
 
-void WwiseWorkUnitParser::parseBankObjectRef(FString SoundBankInfoFilePath)
+bool WwiseWorkUnitParser::parseBankObjectRef(const FString& SoundBankInfoFilePath)
 {
-	//if (const FXmlNode* ChildrenNode = NodeToParse->FindChildNode(TEXT("ObjectInclusionList")))
-	//{
-	//	const FXmlNode* ObjectNode = ChildrenNode->FindChildNode(TEXT("ObjectRef"));
-
-	//	for (const FXmlNode* CurrentNode = ObjectNode; CurrentNode; CurrentNode = CurrentNode->GetNextNode())
-	//	{
-	//		FString CurrentTag = CurrentNode->GetTag();
-	//		if (CurrentTag == TEXT("ObjectRef"))
-	//		{
-	//			FString CurrentStringId = CurrentNode->GetAttribute(TEXT("ID"));
-	//			FGuid CurrentId;
-	//			FGuid::ParseExact(CurrentStringId, EGuidFormats::DigitsWithHyphensInBraces, CurrentId);
-
-	//			AkAssetDatabase& AssetDatabase = AkAssetDatabase::Get();
-	//			TArray<FGuid>& Events = AssetDatabase.BankToEventsMap.FindOrAdd(BankGuid);
-	//			Events.AddUnique(CurrentId);
-	//		}
-	//	}
-	//}
-
 	FXmlFile SoundBankInfoXml(SoundBankInfoFilePath);
 	AkAssetDatabase& AssetDatabase = AkAssetDatabase::Get();
 
-	auto String2Int = [](FString& StringId) 
+	auto String2Int = [](FString StringId)
 	{
-		return FCString::Atoi(*StringId);
+		uint64 res = uint64(FCString::Atoi(*StringId));
+		return res;
 	};
-	
+
 	if (!SoundBankInfoXml.IsValid())
 	{
-		return;
+		return false;
 	}
 
 	const FXmlNode* RootNode = SoundBankInfoXml.GetRootNode();
 	const FString& RootTag = RootNode->GetTag();
 	if (!RootNode || RootTag != TEXT("SoundBanksInfo"))
 	{
-		return;
+		return true;
 	}
 
 	const FXmlNode* SoundBanksNode = RootNode->FindChildNode(TEXT("SoundBanks"));
 	if (!SoundBanksNode)
 	{
-		return;
+		return true;
 	}
+	AssetDatabase.BankToEventsMap.Empty();
+
+	const TArray<FXmlNode*>& ChildrenNodes = SoundBanksNode->GetChildrenNodes();
 
 	const FXmlNode* BankNode = SoundBanksNode->GetFirstChildNode();
 	while (BankNode != nullptr)
 	{
 		if (BankNode->GetTag() == TEXT("SoundBank"))
 		{
-			FString BankId = BankNode->GetAttribute(TEXT("Id"));
+			const FXmlNode* NameNode = BankNode->FindChildNode(TEXT("ShortName"));
 
 			const FXmlNode* EventsNode = BankNode->FindChildNode(TEXT("IncludedEvents"));
-			if (EventsNode != nullptr)
+			if (EventsNode != nullptr && NameNode != nullptr)
 			{
-				TSet<uint32>& EventIds = AssetDatabase.BankToEventsMap.FindOrAdd(BankId);
+				TArray<FString>& EventsArray = AssetDatabase.BankToEventsMap.FindOrAdd(NameNode->GetContent());
 				const TArray<FXmlNode*>& Events = EventsNode->GetChildrenNodes();
 
 				for (int i = 0; i < Events.Num(); i++)
 				{
 					if (Events[i]->GetTag() == TEXT("Event"))
 					{
-						FString StringId = Events[i]->GetAttribute(TEXT("Id"));
-						EventIds.Add(String2Int(StringId));
+						FString EventName = Events[i]->GetAttribute(TEXT("Name"));
+						EventsArray.Add(EventName);
 					}
 				}
 			}
 		}
 		BankNode = BankNode->GetNextNode();
 	}
+
+	return true;
 }
 
 
