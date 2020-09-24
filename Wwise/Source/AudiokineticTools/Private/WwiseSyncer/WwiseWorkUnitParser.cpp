@@ -18,14 +18,25 @@ bool WwiseWorkUnitParser::Parse()
 	}
 
 	auto projectFilePath = AkUnrealHelper::GetWwiseProjectPath();
-	auto WwiseAudioPath = AkUnrealHelper::GetSoundBankDirectory() + TEXT("/SoundbanksInfo.xml");
+	auto WwiseAudioPath = AkUnrealHelper::GetSoundBankDirectory() + TEXT("/Windows/SoundbanksInfo.xml");
+	auto WwiseAudioSecondPath = AkUnrealHelper::GetSoundBankDirectory() + TEXT("/SoundbanksInfo.xml");
 
 	if (!FPaths::FileExists(projectFilePath))
 	{
 		return false;
 	}
 
-	parseBankObjectRef(WwiseAudioPath);
+	
+	bool IsXmlPathValid = parseBankObjectRef(WwiseAudioPath);
+	if (!IsXmlPathValid)
+	{
+		IsXmlPathValid = parseBankObjectRef(WwiseAudioSecondPath);
+
+		if (!IsXmlPathValid)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("WwiseSyncer::Can't Open SoundbanksIno.xml"));
+		}
+	}
 
 	visitor->OnBeginParse();
 	projectRootFolder = FPaths::GetPath(projectFilePath) + TEXT("/");
@@ -382,7 +393,7 @@ void WwiseWorkUnitParser::parseBankObjectRef(FString SoundBankInfoFilePath)
 			const FXmlNode* EventsNode = BankNode->FindChildNode(TEXT("IncludedEvents"));
 			if (EventsNode != nullptr)
 			{
-				TSet<uint32>& EventIds = AssetDatabase.BankToEventsMap.FindOrAdd(String2Int(BankId));
+				TSet<uint32>& EventIds = AssetDatabase.BankToEventsMap.FindOrAdd(BankId);
 				const TArray<FXmlNode*>& Events = EventsNode->GetChildrenNodes();
 
 				for (int i = 0; i < Events.Num(); i++)

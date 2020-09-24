@@ -227,10 +227,10 @@ public:
 	mutable FCriticalSection InitBankLock;
 	//UAkInitBank* InitBank = nullptr;
 	
-	//Bank GUID To Ref Events GUID
-	TMap<uint32, TSet<uint32>> BankToEventsMap;
-	TMap<uint32, UAkAudioEvent*> EventsShortIdMap;
-	TMap<uint32, UAkAudioBank*> BanksShortIdMap;
+	//Bank Name To Ref Events Name
+	TMap<FString, TArray<FString>> BankToEventsMap;
+	TMap<FString, UAkAudioEvent*> EventsNameMap;
+	TMap<FString, UAkAudioBank*> BanksNameMap;
 
 private:
 	AkAssetDatabase();

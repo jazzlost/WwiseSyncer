@@ -177,10 +177,10 @@ bool AkAssetDatabase::Add(const FGuid& Id, UAkAudioType* AudioType)
 	if (auto audioEvent = Cast<UAkAudioEvent>(AudioType))
 	{
 		EventMap.Add(finalId, audioEvent);
-		UAkAudioEvent* Event = EventsShortIdMap.FindOrAdd(audioEvent->ShortID);
+		UAkAudioEvent* Event = EventsNameMap.FindOrAdd(audioEvent->GetName());
 		if (Event == nullptr)
 		{
-			EventsShortIdMap[audioEvent->ShortID] = audioEvent;
+			EventsNameMap[audioEvent->GetName()] = audioEvent;
 		}
 	}
 	else if (auto auxBus = Cast<UAkAuxBus>(AudioType))
@@ -190,7 +190,7 @@ bool AkAssetDatabase::Add(const FGuid& Id, UAkAudioType* AudioType)
 	else if (auto audioBank = Cast<UAkAudioBank>(AudioType))
 	{
 		BankMap.Add(finalId, audioBank);
-		BanksShortIdMap.Add(audioBank->ShortID, audioBank);
+		BanksNameMap.Add(audioBank->GetName(), audioBank);
 	}
 	//else if (auto groupValue = Cast<UAkGroupValue>(AudioType))
 	//{
@@ -713,7 +713,7 @@ void AkAssetDatabase::AssignBank()
 
 	for (auto Map : BankToEventsMap)
 	{
-		auto BankPtr = BanksShortIdMap.Find(Map.Key);
+		auto BankPtr = BanksNameMap.Find(Map.Key);
 		if (BankPtr == nullptr)
 			return;
 		if (*BankPtr)
@@ -723,7 +723,7 @@ void AkAssetDatabase::AssignBank()
 			{
 				for (auto EventShortId : Map.Value)
 				{
-					auto EventPtr = EventsShortIdMap.Find(EventShortId);
+					auto EventPtr = EventsNameMap.Find(EventShortId);
 					if (EventPtr && *EventPtr)
 					{
 						auto EventRef = *EventPtr;
