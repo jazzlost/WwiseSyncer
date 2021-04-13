@@ -19,8 +19,6 @@ public:
 	// todo slaptiste: consider changing these functions to accept FGuids as arguments
 	virtual void EnterEvent(const FGuid& Id, const FString& Name, const FString& RelativePath) {}
 
-	virtual void EnterBank(const FGuid& Id, const FString& Name, const FString& RelativePath) {}
-
 	virtual void EnterAcousticTexture(const FGuid& Id, const FString& Name, const FString& RelativePath) {}
 
 	virtual void EnterAuxBus(const FGuid& Id, const FString& Name, const FString& RelativePath) {}
@@ -48,4 +46,6 @@ public:
 	virtual void RemoveWorkUnit(const FString& WorkUnitPath) {}
 
 	virtual void End() {}
+	
+	virtual void RegisterError(const FString& xmlFilePath, const FString& errorMessage) {};
 };

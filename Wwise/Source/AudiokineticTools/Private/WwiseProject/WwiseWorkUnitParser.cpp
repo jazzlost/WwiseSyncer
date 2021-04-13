@@ -6,7 +6,6 @@
 #include "XmlFile.h"
 #include "AkUnrealHelper.h"
 #include "WorkUnitXmlVisitor.h"
-#include "AkAssetDatabase.h"
 
 #define LOCTEXT_NAMESPACE "AkAudio"
 
@@ -18,24 +17,10 @@ bool WwiseWorkUnitParser::Parse()
 	}
 
 	auto projectFilePath = AkUnrealHelper::GetWwiseProjectPath();
-	auto WwiseAudioPath = AkUnrealHelper::GetSoundBankDirectory() + TEXT("/Windows/SoundbanksInfo.xml");
-	auto WwiseAudioSecondPath = AkUnrealHelper::GetSoundBankDirectory() + TEXT("/SoundbanksInfo.xml");
 
 	if (!FPaths::FileExists(projectFilePath))
 	{
 		return false;
-	}
-
-	
-	bool IsXmlPathValid = parseBankObjectRef(WwiseAudioPath);
-	if (!IsXmlPathValid)
-	{
-		IsXmlPathValid = parseBankObjectRef(WwiseAudioSecondPath);
-
-		if (!IsXmlPathValid)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("WwiseSyncer::Can't Open SoundbanksIno.xml"));
-		}
 	}
 
 	visitor->OnBeginParse();
@@ -47,7 +32,6 @@ bool WwiseWorkUnitParser::Parse()
 		parseFolders(EWwiseItemType::FolderNames[i], CurrentType);
 	}
 	visitor->End();
-
 
 	return true;
 }
@@ -150,7 +134,13 @@ void WwiseWorkUnitParser::parseWorkUnitFile(const FString& WorkUnitPath, const F
 {
 	FXmlFile workUnitXml(WorkUnitPath);
 
-	bool isStandalone = isStandAloneWwu(workUnitXml, ItemType);
+	if (!workUnitXml.IsValid()) 
+	{
+		visitor->RegisterError(WorkUnitPath, workUnitXml.GetLastError());
+		return;
+	}
+
+	bool isStandalone = isStandAloneWwu(workUnitXml, WorkUnitPath, ItemType);
 
 	if (!ForceParse && !isStandalone)
 	{
@@ -170,11 +160,14 @@ void WwiseWorkUnitParser::parseWorkUnitFile(const FString& WorkUnitPath, const F
 	}
 
 	visitor->EnterWorkUnit(WorkUnitPath, relativePath, ItemType, isStandalone, ForceRefresh);
-	parseWorkUnitXml(workUnitXml, WorkUnitPath, relativePath, ItemType);
+	if (!parseWorkUnitXml(workUnitXml, WorkUnitPath, relativePath, ItemType)) 
+	{
+		visitor->RegisterError(WorkUnitPath, TEXT("XML was valid, but did not have the expected structure."));
+	}
 	visitor->ExitWorkUnit(isStandalone);
 }
 
-bool WwiseWorkUnitParser::isStandAloneWwu(const FXmlFile& Wwu, EWwiseItemType::Type ItemType)
+bool WwiseWorkUnitParser::isStandAloneWwu(const FXmlFile& Wwu, const FString& wwuPath, EWwiseItemType::Type ItemType)
 {
 	if (Wwu.IsValid())
 	{
@@ -192,52 +185,52 @@ bool WwiseWorkUnitParser::isStandAloneWwu(const FXmlFile& Wwu, EWwiseItemType::T
 					{
 						return true;
 					}
+					else
+					{
+						return false;
+					}
 				}
 			}
 		}
 	}
-
+	visitor->RegisterError(wwuPath, TEXT("XML was valid, but did not have the expected structure."));
 	return false;
 }
 
-void WwiseWorkUnitParser::parseWorkUnitXml(const FXmlFile& WorkUnitXml, const FString& WorkUnitPath, const FString& RelativePath, EWwiseItemType::Type ItemType)
+bool WwiseWorkUnitParser::parseWorkUnitXml(const FXmlFile& WorkUnitXml, const FString& WorkUnitPath, const FString& RelativePath, EWwiseItemType::Type ItemType)
 {
-	if (!WorkUnitXml.IsValid())
-	{
-		return;
-	}
-
 	const FXmlNode* RootNode = WorkUnitXml.GetRootNode();
 	if (!RootNode)
 	{
-		return;
+		return false;
 	}
 
 	const FXmlNode* ItemNode = RootNode->FindChildNode(EWwiseItemType::DisplayNames[ItemType]);
 	if (!ItemNode)
 	{
-		return;
+		return false;
 	}
 
 	const FXmlNode* WorkUnitNode = ItemNode->FindChildNode(TEXT("WorkUnit"));
 	if (!WorkUnitNode || (WorkUnitNode->GetAttribute(TEXT("Name")) != FPaths::GetBaseFilename(WorkUnitPath)))
 	{
-		return;
+		return false;
 	}
 
 	const FXmlNode* CurrentNode = WorkUnitNode->FindChildNode(TEXT("ChildrenList"));
 	if (!CurrentNode)
 	{
-		return;
+		return true;
 	}
 
 	CurrentNode = CurrentNode->GetFirstChildNode();
 	if (!CurrentNode)
 	{
-		return;
+		return true;
 	}
 
 	parseWorkUnitChildren(CurrentNode, WorkUnitPath, RelativePath, ItemType);
+	return true;
 }
 
 void WwiseWorkUnitParser::recurse(const FXmlNode* CurrentNode, const FString& WorkUnitPath, const FString& CurrentPath, EWwiseItemType::Type ItemType)
@@ -267,18 +260,13 @@ void WwiseWorkUnitParser::parseWorkUnitChildren(const FXmlNode* NodeToParse, con
 		{
 			visitor->EnterEvent(CurrentId, CurrentName, CurrentPath);
 		}
-		if (CurrentTag == TEXT("SoundBank"))
+		else if (CurrentTag == TEXT("AcousticTexture"))
 		{
-			visitor->EnterBank(CurrentId, CurrentName, CurrentPath);
-			//parseBankObjectRef(CurrentNode, CurrentId);
+			if (ItemType == EWwiseItemType::Type::AcousticTexture)
+			{
+				visitor->EnterAcousticTexture(CurrentId, CurrentName, CurrentPath);
+			}
 		}
-		//else if (CurrentTag == TEXT("AcousticTexture"))
-		//{
-		//	if (ItemType == EWwiseItemType::Type::AcousticTexture)
-		//	{
-		//		visitor->EnterAcousticTexture(CurrentId, CurrentName, CurrentPath);
-		//	}
-		//}
 		else if (CurrentTag == TEXT("AuxBus"))
 		{
 			visitor->EnterAuxBus(CurrentId, CurrentName, CurrentPath);
@@ -290,34 +278,34 @@ void WwiseWorkUnitParser::parseWorkUnitChildren(const FXmlNode* NodeToParse, con
 			FString currentWwuPhysicalPath = FPaths::Combine(*FPaths::GetPath(WorkUnitPath), *CurrentName) + ".wwu";
 			parseWorkUnitFile(currentWwuPhysicalPath, CurrentPath, ItemType, false, true);
 		}
-		//else if (CurrentTag == TEXT("SwitchGroup"))
-		//{
-		//	visitor->EnterSwitchGroup(CurrentId, CurrentName, CurrentPath);
-		//	recurse(CurrentNode, WorkUnitPath, CurrentPath, ItemType);
-		//	visitor->ExitSwitchGroup();
-		//}
-		//else if (CurrentTag == TEXT("Switch"))
-		//{
-		//	visitor->EnterSwitch(CurrentId, CurrentName, CurrentPath);
-		//}
-		//else if (CurrentTag == TEXT("StateGroup"))
-		//{
-		//	visitor->EnterStateGroup(CurrentId, CurrentName, CurrentPath);
-		//	recurse(CurrentNode, WorkUnitPath, CurrentPath, ItemType);
-		//	visitor->ExitStateGroup();
-		//}
-		//else if (CurrentTag == TEXT("State"))
-		//{
-		//	visitor->EnterState(CurrentId, CurrentName, CurrentPath);
-		//}
-		//else if (CurrentTag == TEXT("GameParameter"))
-		//{
-		//	visitor->EnterGameParameter(CurrentId, CurrentName, CurrentPath);
-		//}
-		//else if (CurrentTag == TEXT("Trigger"))
-		//{
-		//	visitor->EnterTrigger(CurrentId, CurrentName, CurrentPath);
-		//}
+		else if (CurrentTag == TEXT("SwitchGroup"))
+		{
+			visitor->EnterSwitchGroup(CurrentId, CurrentName, CurrentPath);
+			recurse(CurrentNode, WorkUnitPath, CurrentPath, ItemType);
+			visitor->ExitSwitchGroup();
+		}
+		else if (CurrentTag == TEXT("Switch"))
+		{
+			visitor->EnterSwitch(CurrentId, CurrentName, CurrentPath);
+		}
+		else if (CurrentTag == TEXT("StateGroup"))
+		{
+			visitor->EnterStateGroup(CurrentId, CurrentName, CurrentPath);
+			recurse(CurrentNode, WorkUnitPath, CurrentPath, ItemType);
+			visitor->ExitStateGroup();
+		}
+		else if (CurrentTag == TEXT("State"))
+		{
+			visitor->EnterState(CurrentId, CurrentName, CurrentPath);
+		}
+		else if (CurrentTag == TEXT("GameParameter"))
+		{
+			visitor->EnterGameParameter(CurrentId, CurrentName, CurrentPath);
+		}
+		else if (CurrentTag == TEXT("Trigger"))
+		{
+			visitor->EnterTrigger(CurrentId, CurrentName, CurrentPath);
+		}
 		else if (CurrentTag == TEXT("Folder") || CurrentTag == TEXT("Bus"))
 		{
 			EWwiseItemType::Type currentItemType = EWwiseItemType::Folder;
@@ -334,67 +322,5 @@ void WwiseWorkUnitParser::parseWorkUnitChildren(const FXmlNode* NodeToParse, con
 
 	visitor->ExitChildrenList();
 }
-
-bool WwiseWorkUnitParser::parseBankObjectRef(const FString& SoundBankInfoFilePath)
-{
-	FXmlFile SoundBankInfoXml(SoundBankInfoFilePath);
-	AkAssetDatabase& AssetDatabase = AkAssetDatabase::Get();
-
-	auto String2Int = [](FString StringId)
-	{
-		uint64 res = uint64(FCString::Atoi(*StringId));
-		return res;
-	};
-
-	if (!SoundBankInfoXml.IsValid())
-	{
-		return false;
-	}
-
-	const FXmlNode* RootNode = SoundBankInfoXml.GetRootNode();
-	const FString& RootTag = RootNode->GetTag();
-	if (!RootNode || RootTag != TEXT("SoundBanksInfo"))
-	{
-		return true;
-	}
-
-	const FXmlNode* SoundBanksNode = RootNode->FindChildNode(TEXT("SoundBanks"));
-	if (!SoundBanksNode)
-	{
-		return true;
-	}
-	AssetDatabase.BankToEventsMap.Empty();
-
-	const TArray<FXmlNode*>& ChildrenNodes = SoundBanksNode->GetChildrenNodes();
-
-	const FXmlNode* BankNode = SoundBanksNode->GetFirstChildNode();
-	while (BankNode != nullptr)
-	{
-		if (BankNode->GetTag() == TEXT("SoundBank"))
-		{
-			const FXmlNode* NameNode = BankNode->FindChildNode(TEXT("ShortName"));
-
-			const FXmlNode* EventsNode = BankNode->FindChildNode(TEXT("IncludedEvents"));
-			if (EventsNode != nullptr && NameNode != nullptr)
-			{
-				TArray<FString>& EventsArray = AssetDatabase.BankToEventsMap.FindOrAdd(NameNode->GetContent());
-				const TArray<FXmlNode*>& Events = EventsNode->GetChildrenNodes();
-
-				for (int i = 0; i < Events.Num(); i++)
-				{
-					if (Events[i]->GetTag() == TEXT("Event"))
-					{
-						FString EventName = Events[i]->GetAttribute(TEXT("Name"));
-						EventsArray.Add(EventName);
-					}
-				}
-			}
-		}
-		BankNode = BankNode->GetNextNode();
-	}
-
-	return true;
-}
-
 
 #undef LOCTEXT_NAMESPACE

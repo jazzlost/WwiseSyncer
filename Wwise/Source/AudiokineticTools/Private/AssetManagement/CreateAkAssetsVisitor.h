@@ -1,9 +1,10 @@
 #pragma once
 
-#include "WorkUnitXmlVisitor.h"
+#include "WwiseProject/WorkUnitXmlVisitor.h"
 
 #include "Containers/Array.h"
 #include "Containers/Set.h"
+#include "Misc/Guid.h"
 
 struct FAssetData;
 class UPackage;
@@ -14,8 +15,6 @@ public:
 	void OnBeginParse() override;
 
 	void EnterEvent(const FGuid& Id, const FString& Name, const FString& RelativePath) override;
-
-	void EnterBank(const FGuid& Id, const FString& Name, const FString& RelativePath) override;
 
 	void EnterAcousticTexture(const FGuid& Id, const FString& Name, const FString& RelativePath) override;
 
@@ -33,7 +32,7 @@ public:
 	
 	void End() override;
 
-	void SetDoSave(bool value) { doSave = false; }
+	void RegisterError(const FString& xmlFilePath, const FString& errorMessage) override;
 
 protected:
 	virtual void collectExtraAssetsToDelete(TArray<FAssetData>& assetToDelete) {}
@@ -54,6 +53,6 @@ private:
 
 	FString currentSwitchGroupName;
 	FGuid currentSwitchGroupId;
-	bool doSave = true;
+	bool doAssetCleanup = true;
 };
 

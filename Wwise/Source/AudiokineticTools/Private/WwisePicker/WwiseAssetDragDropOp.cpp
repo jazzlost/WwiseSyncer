@@ -1,8 +1,8 @@
-#include "WwiseAssetDragDropOp.h"
+#include "WwisePicker/WwiseAssetDragDropOp.h"
 
 #include "AkAudioType.h"
 #include "AkUnrealHelper.h"
-#include "AkAssetDatabase.h"
+#include "AssetManagement/AkAssetDatabase.h"
 #include "ContentBrowserModule.h"
 #include "Misc/Paths.h"
 
@@ -70,7 +70,7 @@ FWwiseAssetDragDropOp::~FWwiseAssetDragDropOp()
 
 bool FWwiseAssetDragDropOp::OnAssetViewDrop(const FAssetViewDragAndDropExtender::FPayload& Payload)
 {
-	return !CanDrop;
+	return CanDrop;
 }
 
 bool FWwiseAssetDragDropOp::OnAssetViewDragOver(const FAssetViewDragAndDropExtender::FPayload& Payload)

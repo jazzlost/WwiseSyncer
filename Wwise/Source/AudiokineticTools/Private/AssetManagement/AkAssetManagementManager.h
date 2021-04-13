@@ -2,7 +2,7 @@
 
 #include "DirectoryWatcher/Public/IDirectoryWatcher.h"
 #include "WaapiAssetSynchronizer.h"
-#include "WwiseWorkUnitParser.h"
+#include "WwiseProject/WwiseWorkUnitParser.h"
 #include "ContentBrowser/Public/ContentBrowserDelegates.h"
 
 class AkAssetManagementManager
@@ -16,8 +16,8 @@ public:
 
 	bool IsInited() const { return isInited; }
 
-	//static void ClearSoundBanksForMigration();
-	//static void ModifyProjectSettings();
+	static void ClearSoundBanksForMigration();
+	static void ModifyProjectSettings();
 
 private:
 	void onWwiseDirectoryChanged(const TArray<FFileChangeData>& ChangedFiles);

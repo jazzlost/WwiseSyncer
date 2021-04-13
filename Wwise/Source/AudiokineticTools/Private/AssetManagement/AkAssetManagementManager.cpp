@@ -3,10 +3,11 @@
 #include "AkAudioBankGenerationHelpers.h"
 #include "AkAudioStyle.h"
 #include "AkSettings.h"
+#include "AkSettingsPerUser.h"
 #include "AkUnrealHelper.h"
 #include "AkWaapiClient.h"
-#include "AkAssetDatabase.h"
-#include "CreateAkAssetsVisitor.h"
+#include "AssetManagement/AkAssetDatabase.h"
+#include "AssetManagement/CreateAkAssetsVisitor.h"
 #include "AssetMigrationVisitor.h"
 #include "ContentBrowserModule.h"
 #include "Core/Public/Modules/ModuleManager.h"
@@ -17,22 +18,26 @@
 #include "HAL/PlatformFilemanager.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
-#include "AkToolBehavior.h"
+#include "ToolBehavior/AkToolBehavior.h"
 #include "Widgets/Notifications/SNotificationList.h"
-#include "WwiseAssetDragDropOp.h"
+#include "WwisePicker/WwiseAssetDragDropOp.h"
 
 #define LOCTEXT_NAMESPACE "AkAudio"
 
 void AkAssetManagementManager::Init()
 {
-	wwiseProjectFolder = FPaths::GetPath(AkUnrealHelper::GetWwiseProjectPath());
+	auto wwiseProjectPath = AkUnrealHelper::GetWwiseProjectPath();
+	if (FPaths::FileExists(wwiseProjectPath))
+	{
+		wwiseProjectFolder = FPaths::GetPath(wwiseProjectPath);
 
-	auto& DirectoryWatcherModule = FModuleManager::LoadModuleChecked<FDirectoryWatcherModule>(TEXT("DirectoryWatcher"));
-	DirectoryWatcherModule.Get()->RegisterDirectoryChangedCallback_Handle(
-		wwiseProjectFolder
-		, IDirectoryWatcher::FDirectoryChanged::CreateRaw(this, &AkAssetManagementManager::onWwiseDirectoryChanged)
-		, wwiseDirectoryChangedHandle
-	);
+		auto& DirectoryWatcherModule = FModuleManager::LoadModuleChecked<FDirectoryWatcherModule>(TEXT("DirectoryWatcher"));
+		DirectoryWatcherModule.Get()->RegisterDirectoryChangedCallback_Handle(
+			wwiseProjectFolder
+			, IDirectoryWatcher::FDirectoryChanged::CreateRaw(this, &AkAssetManagementManager::onWwiseDirectoryChanged)
+			, wwiseDirectoryChangedHandle
+		);
+	}
 
 	waapiAssetSync.Init();
 
@@ -54,8 +59,11 @@ void AkAssetManagementManager::Uninit()
 
 	waapiAssetSync.Uninit();
 
-	auto& DirectoryWatcherModule = FModuleManager::LoadModuleChecked<FDirectoryWatcherModule>(TEXT("DirectoryWatcher"));
-	DirectoryWatcherModule.Get()->UnregisterDirectoryChangedCallback_Handle(wwiseProjectFolder, wwiseDirectoryChangedHandle);
+	if (wwiseDirectoryChangedHandle.IsValid())
+	{
+		auto& DirectoryWatcherModule = FModuleManager::LoadModuleChecked<FDirectoryWatcherModule>(TEXT("DirectoryWatcher"));
+		DirectoryWatcherModule.Get()->UnregisterDirectoryChangedCallback_Handle(wwiseProjectFolder, wwiseDirectoryChangedHandle);
+	}
 
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::GetModuleChecked<FContentBrowserModule>("ContentBrowser");
 	TArray<FAssetViewDragAndDropExtender>& AssetViewDragAndDropExtenders = ContentBrowserModule.GetAssetViewDragAndDropExtenders();
@@ -88,12 +96,12 @@ void AkAssetManagementManager::DoAssetSynchronization()
 
 	auto end = FPlatformTime::Cycles64();
 
-	//UE_LOG(LogAkAudio, Display, TEXT("Wwise Asset Synchronization took %f seconds."), FPlatformTime::ToSeconds64(end - start));
+	UE_LOG(LogAkSoundData, Display, TEXT("Wwise Asset Synchronization took %f seconds."), FPlatformTime::ToSeconds64(end - start));
 }
 
 void AkAssetManagementManager::DoAssetMigration()
 {
-	//ClearSoundBanksForMigration();
+	ClearSoundBanksForMigration();
 
 	if (!isInited)
 	{
@@ -120,39 +128,39 @@ void AkAssetManagementManager::DoAssetMigration()
 	GEditor->PlayEditorSound(TEXT("/Engine/EditorSounds/Notifications/CompileSuccess_Cue.CompileSuccess_Cue"));
 }
 
-//void AkAssetManagementManager::ClearSoundBanksForMigration()
-//{
-//	auto soundBankDirectory = AkUnrealHelper::GetSoundBankDirectory();
-//
-//	TArray<FString> foundFiles;
-//
-//	auto& platformFile = FPlatformFileManager::Get().GetPlatformFile();
-//	platformFile.FindFilesRecursively(foundFiles, *soundBankDirectory, TEXT(".bnk"));
-//	platformFile.FindFilesRecursively(foundFiles, *soundBankDirectory, TEXT(".json"));
-//
-//	if (foundFiles.Num() > 0)
-//	{
-//		platformFile.DeleteDirectoryRecursively(*AkUnrealHelper::GetSoundBankDirectory());
-//	}
-//}
+void AkAssetManagementManager::ClearSoundBanksForMigration()
+{
+	auto soundBankDirectory = AkUnrealHelper::GetSoundBankDirectory();
 
-//void AkAssetManagementManager::ModifyProjectSettings()
-//{
-//	// This whole hack is because Unreal XML classes doesn't
-//	// handle <!CDATA[]> which the Wwise project file use.
-//	// Doing it the dirty way instead.
-//	auto projectPath = AkUnrealHelper::GetWwiseProjectPath();
-//	FString projectContent;
-//	if (FFileHelper::LoadFileToString(projectContent, *projectPath))
-//	{
-//		bool modified = AkToolBehavior::Get()->AkAssetManagementManager_ModifyProjectSettings(projectContent);
-//
-//		if (modified)
-//		{
-//			FFileHelper::SaveStringToFile(projectContent, *projectPath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
-//		}
-//	}
-//}
+	TArray<FString> foundFiles;
+
+	auto& platformFile = FPlatformFileManager::Get().GetPlatformFile();
+	platformFile.FindFilesRecursively(foundFiles, *soundBankDirectory, TEXT(".bnk"));
+	platformFile.FindFilesRecursively(foundFiles, *soundBankDirectory, TEXT(".json"));
+
+	if (foundFiles.Num() > 0)
+	{
+		platformFile.DeleteDirectoryRecursively(*AkUnrealHelper::GetSoundBankDirectory());
+	}
+}
+
+void AkAssetManagementManager::ModifyProjectSettings()
+{
+	// This whole hack is because Unreal XML classes doesn't
+	// handle <!CDATA[]> which the Wwise project file use.
+	// Doing it the dirty way instead.
+	auto projectPath = AkUnrealHelper::GetWwiseProjectPath();
+	FString projectContent;
+	if (FFileHelper::LoadFileToString(projectContent, *projectPath))
+	{
+		bool modified = AkToolBehavior::Get()->AkAssetManagementManager_ModifyProjectSettings(projectContent);
+
+		if (modified)
+		{
+			FFileHelper::SaveStringToFile(projectContent, *projectPath, FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+		}
+	}
+}
 
 void AkAssetManagementManager::onWwiseDirectoryChanged(const TArray<FFileChangeData>& ChangedFiles)
 {
@@ -179,16 +187,16 @@ void AkAssetManagementManager::onWwiseDirectoryChanged(const TArray<FFileChangeD
 
 bool AkAssetManagementManager::onAssetViewDrop(const FAssetViewDragAndDropExtender::FPayload& Payload)
 {
-	return !canDrop;
+	return canDrop;
 }
 
 bool AkAssetManagementManager::onAssetViewDragOver(const FAssetViewDragAndDropExtender::FPayload& Payload)
 {
-	//if (!AkUnrealHelper::IsUsingEventBased() || !GetDefault<UAkSettings>()->EnableAutomaticAssetSynchronization)
-	//{
-	//	canDrop = false;
-	//	return false;
-	//}
+	if (!AkUnrealHelper::IsUsingEventBased() || !GetDefault<UAkSettingsPerUser>()->EnableAutomaticAssetSynchronization)
+	{
+		canDrop = false;
+		return false;
+	}
 
 	if (Payload.DragDropOp->IsOfType<FWwiseAssetDragDropOp>())
 	{

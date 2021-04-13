@@ -74,6 +74,7 @@ const FString WwiseWaapiHelper::PROPERTY                     = TEXT("property");
 const FString WwiseWaapiHelper::RADIUS                       = TEXT("radius");
 const FString WwiseWaapiHelper::RANGE                        = TEXT("range");
 const FString WwiseWaapiHelper::REBUILD                      = TEXT("rebuild");
+const FString WwiseWaapiHelper::REBUILD_INIT_BANK            = TEXT("rebuildInitBank");
 const FString WwiseWaapiHelper::REDO                         = TEXT("Redo");
 const FString WwiseWaapiHelper::RESTRICTION                  = TEXT("restriction");
 const FString WwiseWaapiHelper::RETURN                       = TEXT("return");
@@ -96,10 +97,6 @@ const FString WwiseWaapiHelper::VALUE                        = TEXT("value");
 const FString WwiseWaapiHelper::VOLUME                       = TEXT("Volume");
 const FString WwiseWaapiHelper::WHERE                        = TEXT("where");
 const FString WwiseWaapiHelper::WORKUNIT_TYPE                = TEXT("workunit:type");
-const FString WwiseWaapiHelper::GENERATE_ALLBANKS_ACLOSE	 = TEXT("GenerateAllSoundbanksAllPlatformsAutoClose");
-
-
-
 
 /*------------------------------------------------------------------------------------
  Methods

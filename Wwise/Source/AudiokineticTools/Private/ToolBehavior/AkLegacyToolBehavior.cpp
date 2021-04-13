@@ -4,34 +4,34 @@
 #include "AkAudioBank.h"
 #include "AkAudioEvent.h"
 #include "AkAuxBus.h"
-//#include "AkGroupValue.h"
-//#include "AkInitBank.h"
-//#include "AkRtpc.h"
-//#include "AkTrigger.h"
+#include "AkGroupValue.h"
+#include "AkInitBank.h"
+#include "AkRtpc.h"
+#include "AkTrigger.h"
 #include "AkUnrealHelper.h"
-#include "AkAssetDatabase.h"
-//#include "AssetManagement/WwiseConsoleAkSoundDataBuilder.h"
+#include "AssetManagement/AkAssetDatabase.h"
+#include "AssetManagement/WwiseConsoleAkSoundDataBuilder.h"
 #include "Misc/MessageDialog.h"
 #include "SlateCore/Public/Widgets/SWindow.h"
-//#include "UI/SLegacyGenerateSoundBanks.h"
+#include "UI/SLegacyGenerateSoundBanks.h"
 
-//bool AkLegacyToolBehavior::CreateSoundDataWidget(const TSharedRef<SWindow>& Window, TArray<TWeakObjectPtr<UAkAudioBank>>* SoundBanks, bool ProjectSave)
-//{
-//	TSharedRef<SLegacyGenerateSoundBanks> WindowContent = SNew(SLegacyGenerateSoundBanks, SoundBanks);
-//	WindowContent->SetShouldSaveWwiseProject(ProjectSave);
-//	if (!WindowContent->ShouldDisplayWindow())
-//	{
-//		return false;
-//	}
-//
-//	// Add our SGenerateSoundBanks to the window
-//	Window->SetContent(WindowContent);
-//
-//	// Set focus to our SGenerateSoundBanks widget, so our keyboard keys work right off the bat
-//	Window->SetWidgetToFocusOnActivate(WindowContent);
-//
-//	return true;
-//}
+bool AkLegacyToolBehavior::CreateSoundDataWidget(const TSharedRef<SWindow>& Window, TArray<TWeakObjectPtr<UAkAudioBank>>* SoundBanks, bool ProjectSave)
+{
+	TSharedRef<SLegacyGenerateSoundBanks> WindowContent = SNew(SLegacyGenerateSoundBanks, SoundBanks);
+	WindowContent->SetShouldSaveWwiseProject(ProjectSave);
+	if (!WindowContent->ShouldDisplayWindow())
+	{
+		return false;
+	}
+
+	// Add our SGenerateSoundBanks to the window
+	Window->SetContent(WindowContent);
+
+	// Set focus to our SGenerateSoundBanks widget, so our keyboard keys work right off the bat
+	Window->SetWidgetToFocusOnActivate(WindowContent);
+
+	return true;
+}
 
 bool AkLegacyToolBehavior::AkAssetManagementManager_ModifyProjectSettings(FString& ProjectContent)
 {
@@ -73,11 +73,11 @@ bool AkLegacyToolBehavior::AkAssetDatabase_Remove(AkAssetDatabase* Instance, UAk
 {
 	auto name = AudioType->GetName();
 
-	/*if (auto acousticTexture = Cast<UAkAcousticTexture>(AudioType))
+	if (auto acousticTexture = Cast<UAkAcousticTexture>(AudioType))
 	{
 		Instance->AcousticTextureMap.RemoveByName(name);
-	}*/
-	/*else */if (auto audioEvent = Cast<UAkAudioEvent>(AudioType))
+	}
+	else if (auto audioEvent = Cast<UAkAudioEvent>(AudioType))
 	{
 		Instance->EventMap.RemoveByName(name);
 	}
@@ -85,26 +85,26 @@ bool AkLegacyToolBehavior::AkAssetDatabase_Remove(AkAssetDatabase* Instance, UAk
 	{
 		Instance->AuxBusMap.RemoveByName(name);
 	}
-	//else if (auto groupValue = Cast<UAkGroupValue>(AudioType))
-	//{
-	//	Instance->GroupValueMap.RemoveByName(name);
-	//}
-	//else if (auto trigger = Cast<UAkTrigger>(AudioType))
-	//{
-	//	Instance->TriggerMap.RemoveByName(name);
-	//}
-	//else if (auto rtpc = Cast<UAkRtpc>(AudioType))
-	//{
-	//	Instance->RtpcMap.RemoveByName(name);
-	//}
+	else if (auto groupValue = Cast<UAkGroupValue>(AudioType))
+	{
+		Instance->GroupValueMap.RemoveByName(name);
+	}
+	else if (auto trigger = Cast<UAkTrigger>(AudioType))
+	{
+		Instance->TriggerMap.RemoveByName(name);
+	}
+	else if (auto rtpc = Cast<UAkRtpc>(AudioType))
+	{
+		Instance->RtpcMap.RemoveByName(name);
+	}
 	else if (auto audioBank = Cast<UAkAudioBank>(AudioType))
 	{
 		Instance->BankMap.RemoveByName(name);
 	}
-	//else if (auto initBank = Cast<UAkInitBank>(AudioType))
-	//{
-	//	Instance->InitBank = nullptr;
-	//}
+	else if (auto initBank = Cast<UAkInitBank>(AudioType))
+	{
+		Instance->InitBank = nullptr;
+	}
 	else
 	{
 		return false;
@@ -114,28 +114,28 @@ bool AkLegacyToolBehavior::AkAssetDatabase_Remove(AkAssetDatabase* Instance, UAk
 }
 
 // AkSoundDataBuilder
-//bool AkLegacyToolBehavior::AkSoundDataBuilder_GetBankName(AkSoundDataBuilder* Instance, UAkAudioBank* Bank, const TSet<FString>& BanksToGenerate, FString& bankName)
-//{
-//	bankName = Bank->GetName();
-//	return BanksToGenerate.Contains(bankName);
-//}
+bool AkLegacyToolBehavior::AkSoundDataBuilder_GetBankName(AkSoundDataBuilder* Instance, UAkAudioBank* Bank, const TSet<FString>& BanksToGenerate, FString& bankName)
+{
+	bankName = Bank->GetName();
+	return BanksToGenerate.Contains(bankName);
+}
 
 // CookAkSoundDataTask
-//TSharedPtr<AkSoundDataBuilder, ESPMode::ThreadSafe> AkLegacyToolBehavior::CookAkSoundDataTask_CreateBuilder(const AkSoundDataBuilder::InitParameters& InitParameters)
-//{
-//	return MakeShared<WwiseConsoleAkSoundDataBuilder, ESPMode::ThreadSafe>(InitParameters);
-//}
+TSharedPtr<AkSoundDataBuilder, ESPMode::ThreadSafe> AkLegacyToolBehavior::CookAkSoundDataTask_CreateBuilder(const AkSoundDataBuilder::InitParameters& InitParameters)
+{
+	return MakeShared<WwiseConsoleAkSoundDataBuilder, ESPMode::ThreadSafe>(InitParameters);
+}
 
 // WwiseConsoleAkSoundDataBuilder
-//FString AkLegacyToolBehavior::WwiseConsoleAkSoundDataBuilder_AudioBankEventIncludes() const
-//{
-//	return TEXT("\"\tEvent\tStructure\tMedia");
-//}
-//
-//FString AkLegacyToolBehavior::WwiseConsoleAkSoundDataBuilder_AudioBankAuxBusIncludes() const
-//{
-//	return TEXT("\"\tStructure\tMedia");
-//}
+FString AkLegacyToolBehavior::WwiseConsoleAkSoundDataBuilder_AudioBankEventIncludes() const
+{
+	return TEXT("\"\tEvent\tStructure\tMedia");
+}
+
+FString AkLegacyToolBehavior::WwiseConsoleAkSoundDataBuilder_AudioBankAuxBusIncludes() const
+{
+	return TEXT("\"\tStructure\tMedia");
+}
 
 // AkAssetFactory
 bool AkLegacyToolBehavior::AkAssetFactory_ValidNewAssetPath(FName Name, const FString& AssetPath, const UClass* AssetClass) const

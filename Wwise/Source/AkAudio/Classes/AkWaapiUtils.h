@@ -70,6 +70,7 @@ public:
 	static const FString RADIUS;
 	static const FString RANGE;
 	static const FString REBUILD;
+	static const FString REBUILD_INIT_BANK;
 	static const FString REDO;
 	static const FString RESTRICTION;
 	static const FString RETURN;
@@ -92,7 +93,6 @@ public:
 	static const FString VOLUME;
 	static const FString WHERE;
 	static const FString WORKUNIT_TYPE;
-	static const FString GENERATE_ALLBANKS_ACLOSE;
 };
 
 bool CallWappiGetPropertySate(const FString& ItemID, const FString& ItemProperty, TSharedPtr<FJsonObject>& ItemInfoResult); 
