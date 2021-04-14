@@ -70,7 +70,7 @@ FWwiseAssetDragDropOp::~FWwiseAssetDragDropOp()
 
 bool FWwiseAssetDragDropOp::OnAssetViewDrop(const FAssetViewDragAndDropExtender::FPayload& Payload)
 {
-	return CanDrop;
+	return !CanDrop;
 }
 
 bool FWwiseAssetDragDropOp::OnAssetViewDragOver(const FAssetViewDragAndDropExtender::FPayload& Payload)

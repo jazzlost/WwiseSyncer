@@ -82,6 +82,9 @@ private:
 	void PlayEvent(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects);
 	void StopEvent(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects);
 	void GroupIntoSoundBank(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects);
+
+	void Sync(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects);
+	void Migrate(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects);
 }; 
 
 

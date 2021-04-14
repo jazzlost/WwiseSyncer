@@ -4,10 +4,10 @@
 #include "AkAudioBank.h"
 #include "AkAudioEvent.h"
 #include "AkAuxBus.h"
-#include "AkGroupValue.h"
-#include "AkInitBank.h"
-#include "AkRtpc.h"
-#include "AkTrigger.h"
+//#include "AkGroupValue.h"
+//#include "AkInitBank.h"
+//#include "AkRtpc.h"
+//#include "AkTrigger.h"
 #include "AkUnrealHelper.h"
 #include "AssetManagement/AkAssetDatabase.h"
 #include "AssetManagement/WwiseConsoleAkSoundDataBuilder.h"
@@ -73,11 +73,11 @@ bool AkLegacyToolBehavior::AkAssetDatabase_Remove(AkAssetDatabase* Instance, UAk
 {
 	auto name = AudioType->GetName();
 
-	if (auto acousticTexture = Cast<UAkAcousticTexture>(AudioType))
+	/*if (auto acousticTexture = Cast<UAkAcousticTexture>(AudioType))
 	{
 		Instance->AcousticTextureMap.RemoveByName(name);
-	}
-	else if (auto audioEvent = Cast<UAkAudioEvent>(AudioType))
+	}*/
+	/*else */if (auto audioEvent = Cast<UAkAudioEvent>(AudioType))
 	{
 		Instance->EventMap.RemoveByName(name);
 	}
@@ -85,26 +85,26 @@ bool AkLegacyToolBehavior::AkAssetDatabase_Remove(AkAssetDatabase* Instance, UAk
 	{
 		Instance->AuxBusMap.RemoveByName(name);
 	}
-	else if (auto groupValue = Cast<UAkGroupValue>(AudioType))
-	{
-		Instance->GroupValueMap.RemoveByName(name);
-	}
-	else if (auto trigger = Cast<UAkTrigger>(AudioType))
-	{
-		Instance->TriggerMap.RemoveByName(name);
-	}
-	else if (auto rtpc = Cast<UAkRtpc>(AudioType))
-	{
-		Instance->RtpcMap.RemoveByName(name);
-	}
+	//else if (auto groupValue = Cast<UAkGroupValue>(AudioType))
+	//{
+	//	Instance->GroupValueMap.RemoveByName(name);
+	//}
+	//else if (auto trigger = Cast<UAkTrigger>(AudioType))
+	//{
+	//	Instance->TriggerMap.RemoveByName(name);
+	//}
+	//else if (auto rtpc = Cast<UAkRtpc>(AudioType))
+	//{
+	//	Instance->RtpcMap.RemoveByName(name);
+	//}
 	else if (auto audioBank = Cast<UAkAudioBank>(AudioType))
 	{
 		Instance->BankMap.RemoveByName(name);
 	}
-	else if (auto initBank = Cast<UAkInitBank>(AudioType))
-	{
-		Instance->InitBank = nullptr;
-	}
+	//else if (auto initBank = Cast<UAkInitBank>(AudioType))
+	//{
+	//	Instance->InitBank = nullptr;
+	//}
 	else
 	{
 		return false;

@@ -97,6 +97,10 @@ const FString WwiseWaapiHelper::VALUE                        = TEXT("value");
 const FString WwiseWaapiHelper::VOLUME                       = TEXT("Volume");
 const FString WwiseWaapiHelper::WHERE                        = TEXT("where");
 const FString WwiseWaapiHelper::WORKUNIT_TYPE                = TEXT("workunit:type");
+const FString WwiseWaapiHelper::GENERATE_ALLBANKS_ACLOSE	 = TEXT("GenerateAllSoundbanksAllPlatformsAutoClose");
+
+
+
 
 /*------------------------------------------------------------------------------------
  Methods

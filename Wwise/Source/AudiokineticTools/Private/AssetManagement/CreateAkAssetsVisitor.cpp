@@ -1,18 +1,18 @@
 #include "CreateAkAssetsVisitor.h"
 
-#include "AkAcousticTexture.h"
+//#include "AkAcousticTexture.h"
 #include "AkAssetDatabase.h"
-#include "AkAudioBank.h"
+//#include "AkAudioBank.h"
 #include "AkAudioDevice.h"
 #include "AkAudioEvent.h"
 #include "AkAuxBus.h"
-#include "AkInitBank.h"
-#include "AkMediaAsset.h"
-#include "AkRtpc.h"
-#include "AkSettings.h"
-#include "AkStateValue.h"
-#include "AkSwitchValue.h"
-#include "AkTrigger.h"
+//#include "AkInitBank.h"
+//#include "AkMediaAsset.h"
+//#include "AkRtpc.h"
+//#include "AkSettings.h"
+//#include "AkStateValue.h"
+//#include "AkSwitchValue.h"
+//#include "AkTrigger.h"
 #include "AkUnrealHelper.h"
 #include "AssetRegistry/Public/AssetRegistryModule.h"
 #include "AssetTools/Public/AssetToolsModule.h"
@@ -38,9 +38,14 @@ void CreateAkAssetsVisitor::EnterEvent(const FGuid& Id, const FString& Name, con
 	createAsset<UAkAudioEvent>(Id, Name, Name, RelativePath);
 }
 
+void CreateAkAssetsVisitor::EnterBank(const FGuid& Id, const FString& Name, const FString& RelativePath)
+{
+	createAsset<UAkAudioBank>(Id, Name, Name, RelativePath);
+}
+
 void CreateAkAssetsVisitor::EnterAcousticTexture(const FGuid& Id, const FString& Name, const FString& RelativePath)
 {
-	createAsset<UAkAcousticTexture>(Id, Name, Name, RelativePath);
+	//createAsset<UAkAcousticTexture>(Id, Name, Name, RelativePath);
 }
 
 void CreateAkAssetsVisitor::EnterAuxBus(const FGuid& Id, const FString& Name, const FString& RelativePath)
@@ -56,7 +61,7 @@ void CreateAkAssetsVisitor::EnterStateGroup(const FGuid& Id, const FString& Name
 
 void CreateAkAssetsVisitor::EnterState(const FGuid& Id, const FString& Name, const FString& RelativePath)
 {
-	createAsset<UAkStateValue>(Id, Name, FString::Printf(TEXT("%s-%s"), *currentStateGroupName, *Name), RelativePath, currentStateGroupId);
+	//createAsset<UAkStateValue>(Id, Name, FString::Printf(TEXT("%s-%s"), *currentStateGroupName, *Name), RelativePath, currentStateGroupId);
 }
 
 void CreateAkAssetsVisitor::EnterSwitchGroup(const FGuid& Id, const FString& Name, const FString& RelativePath)
@@ -67,39 +72,42 @@ void CreateAkAssetsVisitor::EnterSwitchGroup(const FGuid& Id, const FString& Nam
 
 void CreateAkAssetsVisitor::EnterSwitch(const FGuid& Id, const FString& Name, const FString& RelativePath)
 {
-	createAsset<UAkSwitchValue>(Id, Name, FString::Printf(TEXT("%s-%s"), *currentSwitchGroupName, *Name), RelativePath, currentSwitchGroupId);
+	//createAsset<UAkSwitchValue>(Id, Name, FString::Printf(TEXT("%s-%s"), *currentSwitchGroupName, *Name), RelativePath, currentSwitchGroupId);
 }
 
 void CreateAkAssetsVisitor::EnterGameParameter(const FGuid& Id, const FString& Name, const FString& RelativePath)
 {
-	createAsset<UAkRtpc>(Id, Name, Name, RelativePath);
+	//createAsset<UAkRtpc>(Id, Name, Name, RelativePath);
 }
 
 void CreateAkAssetsVisitor::EnterTrigger(const FGuid& Id, const FString& Name, const FString& RelativePath)
 {
-	createAsset<UAkTrigger>(Id, Name, Name, RelativePath);
+	//createAsset<UAkTrigger>(Id, Name, Name, RelativePath);
 }
 
 void CreateAkAssetsVisitor::End()
 {
 	auto& assetDatabase = AkAssetDatabase::Get();
 
-	if (auto* InitBank = assetDatabase.InitBank)
+	if (doSave)
 	{
-		if (auto Outermost = InitBank->GetOutermost())
-		{
-			if (Outermost->IsDirty())
-			{
-				packagesToSave.Add(Outermost);
-			}
-		}
-	}
+		//if (auto* InitBank = assetDatabase.InitBank)
+		//{
+		//	if (auto Outermost = InitBank->GetOutermost())
+		//	{
+		//		if (Outermost->IsDirty())
+		//		{
+		//			packagesToSave.Add(Outermost);
+		//		}
+		//	}
+		//}
 
-	if (packagesToSave.Num() > 0)
-	{
-		FScopedSlowTask SlowTask(0.f, LOCTEXT("AK_SaveNewAkAssets", "Saving new sound data assets..."));
-		SlowTask.MakeDialog();
-		UEditorLoadingAndSavingUtils::SavePackages(packagesToSave, true);
+		if (packagesToSave.Num() > 0)
+		{
+			FScopedSlowTask SlowTask(0.f, LOCTEXT("AK_SaveNewAkAssets", "Saving new sound data assets..."));
+			SlowTask.MakeDialog();
+			UEditorLoadingAndSavingUtils::SavePackages(packagesToSave, true);
+		}
 	}
 
 	if (doAssetCleanup)
@@ -113,7 +121,7 @@ void CreateAkAssetsVisitor::End()
 				if (typeEntry.Value && typeEntry.Value->IsValidLowLevel() && !typeEntry.Value->IsA<UAkInitBank>() && !typeEntry.Value->IsA<UAkAudioBank>() && !foundAssets.Contains(typeEntry.Key))
 				{
 					assetDataToDelete.Emplace(typeEntry.Value);
-					assetDatabase.FillAssetsToDelete(Cast<UAkAudioType>(typeEntry.Value), assetDataToDelete);
+					//assetDatabase.FillAssetsToDelete(Cast<UAkAudioType>(typeEntry.Value), assetDataToDelete);
 				}
 			}
 		}
@@ -133,6 +141,8 @@ void CreateAkAssetsVisitor::End()
 			ObjectTools::DeleteAssets(assetDataToDelete, true);
 		}
 	}
+
+	assetDatabase.AssignBank();
 }
 
 template<typename AssetType>
@@ -143,6 +153,9 @@ void CreateAkAssetsVisitor::createAsset(const FGuid& Id, const FString& Name, co
 		return;
 
 	foundAssets.Add(Id);
+
+	if (!doSave)
+		return;
 
 	auto package = asset->GetOutermost();
 	if (package && package->IsDirty())

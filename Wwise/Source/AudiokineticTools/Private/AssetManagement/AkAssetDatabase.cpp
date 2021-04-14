@@ -1,17 +1,17 @@
 #include "AkAssetDatabase.h"
 
-#include "AkAcousticTexture.h"
+//#include "AkAcousticTexture.h"
 #include "AkAudioBank.h"
 #include "AkAudioEvent.h"
 #include "AkAuxBus.h"
-#include "AkGroupValue.h"
-#include "AkInitBank.h"
-#include "AkMediaAsset.h"
-#include "AkRtpc.h"
+//#include "AkGroupValue.h"
+//#include "AkInitBank.h"
+//#include "AkMediaAsset.h"
+//#include "AkRtpc.h"
 #include "AkSettings.h"
-#include "AkStateValue.h"
-#include "AkSwitchValue.h"
-#include "AkTrigger.h"
+//#include "AkStateValue.h"
+//#include "AkSwitchValue.h"
+//#include "AkTrigger.h"
 #include "AkUnrealHelper.h"
 #include "AkWaapiClient.h"
 #include "AssetRegistry/Public/AssetRegistryModule.h"
@@ -30,6 +30,7 @@
 #include "AssetManagement/WaapiAssetSynchronizer.h"
 #include "UnrealEd/Public/ObjectTools.h"
 #include "UnrealEd/Public/PackageTools.h"
+//#include "GenericPlatformFile.h"
 
 #define LOCTEXT_NAMESPACE "AkAudio"
 
@@ -78,25 +79,29 @@ void AkAssetDatabase::Init()
 		}
 	}
 
-	CreateInitBankIfNeeded();
+	//CreateInitBankIfNeeded();
 
 	OnTick = FTickerDelegate::CreateRaw(this, &AkAssetDatabase::Tick);
 	TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(OnTick);
+
+	if(!assetManagementManager.IsInited())
+		assetManagementManager.Init();
+
 }
 
 void AkAssetDatabase::Clear()
 {
 	{
 		FScopeLock autoLock(&InitBankLock);
-		InitBank = nullptr;
+		//InitBank = nullptr;
 	}
 
-	AcousticTextureMap.Empty();
+	//AcousticTextureMap.Empty();
 	EventMap.Empty();
 	AuxBusMap.Empty();
-	GroupValueMap.Empty();
-	TriggerMap.Empty();
-	RtpcMap.Empty();
+	//GroupValueMap.Empty();
+	//TriggerMap.Empty();
+	//RtpcMap.Empty();
 	BankMap.Empty();
 	AudioTypeMap.Empty();
 }
@@ -121,11 +126,11 @@ FString AkAssetDatabase::GetWwisePathFromAssetPath(const FString& AssetPath)
 
 FString AkAssetDatabase::GetBaseFolderForAssetType(const UClass* Klass)
 {
-	if (Klass->IsChildOf<UAkAcousticTexture>())
-	{
-		return AkAssetTraits<UAkAcousticTexture>::BaseFolder();
-	}
-	else if (Klass->IsChildOf<UAkAudioEvent>())
+	//if (Klass->IsChildOf<UAkAcousticTexture>())
+	//{
+	//	return AkAssetTraits<UAkAcousticTexture>::BaseFolder();
+	//}
+	if (Klass->IsChildOf<UAkAudioEvent>())
 	{
 		return AkAssetTraits<UAkAudioEvent>::BaseFolder();
 	}
@@ -133,22 +138,26 @@ FString AkAssetDatabase::GetBaseFolderForAssetType(const UClass* Klass)
 	{
 		return AkAssetTraits<UAkAuxBus>::BaseFolder();
 	}
-	else if (Klass->IsChildOf<UAkRtpc>())
+	else if (Klass->IsChildOf<UAkAudioBank>())
 	{
-		return AkAssetTraits<UAkRtpc>::BaseFolder();
+		return AkAssetTraits<UAkAudioBank>::BaseFolder();
 	}
-	else if (Klass->IsChildOf<UAkStateValue>())
-	{
-		return AkAssetTraits<UAkStateValue>::BaseFolder();
-	}
-	else if (Klass->IsChildOf<UAkSwitchValue>())
-	{
-		return AkAssetTraits<UAkSwitchValue>::BaseFolder();
-	}
-	else if (Klass->IsChildOf<UAkTrigger>())
-	{
-		return AkAssetTraits<UAkTrigger>::BaseFolder();
-	}
+	//else if (Klass->IsChildOf<UAkRtpc>())
+	//{
+	//	return AkAssetTraits<UAkRtpc>::BaseFolder();
+	//}
+	//else if (Klass->IsChildOf<UAkStateValue>())
+	//{
+	//	return AkAssetTraits<UAkStateValue>::BaseFolder();
+	//}
+	//else if (Klass->IsChildOf<UAkSwitchValue>())
+	//{
+	//	return AkAssetTraits<UAkSwitchValue>::BaseFolder();
+	//}
+	//else if (Klass->IsChildOf<UAkTrigger>())
+	//{
+	//	return AkAssetTraits<UAkTrigger>::BaseFolder();
+	//}
 
 	return AkAssetTraits<UAkAudioType>::BaseFolder();
 }
@@ -162,38 +171,44 @@ bool AkAssetDatabase::Add(const FGuid& Id, UAkAudioType* AudioType)
 		return false;
 	}
 
-	if (auto acousticTexture = Cast<UAkAcousticTexture>(AudioType))
-	{
-		AcousticTextureMap.Add(finalId, acousticTexture);
-	}
-	else if (auto audioEvent = Cast<UAkAudioEvent>(AudioType))
+	//if (auto acousticTexture = Cast<UAkAcousticTexture>(AudioType))
+	//{
+	//	AcousticTextureMap.Add(finalId, acousticTexture);
+	//}
+	if (auto audioEvent = Cast<UAkAudioEvent>(AudioType))
 	{
 		EventMap.Add(finalId, audioEvent);
+		UAkAudioEvent* Event = EventsNameMap.FindOrAdd(audioEvent->GetName());
+		if (Event == nullptr)
+		{
+			EventsNameMap[audioEvent->GetName()] = audioEvent;
+		}
 	}
 	else if (auto auxBus = Cast<UAkAuxBus>(AudioType))
 	{
 		AuxBusMap.Add(finalId, auxBus);
 	}
-	else if (auto groupValue = Cast<UAkGroupValue>(AudioType))
-	{
-		GroupValueMap.Add(finalId, groupValue);
-	}
-	else if (auto trigger = Cast<UAkTrigger>(AudioType))
-	{
-		TriggerMap.Add(finalId, trigger);
-	}
-	else if (auto rtpc = Cast<UAkRtpc>(AudioType))
-	{
-		RtpcMap.Add(finalId, rtpc);
-	}
 	else if (auto audioBank = Cast<UAkAudioBank>(AudioType))
 	{
 		BankMap.Add(finalId, audioBank);
+		BanksNameMap.Add(audioBank->GetName(), audioBank);
 	}
-	else if (auto initBank = Cast<UAkInitBank>(AudioType))
-	{
-		InitBank = initBank;
-	}
+	//else if (auto groupValue = Cast<UAkGroupValue>(AudioType))
+	//{
+	//	GroupValueMap.Add(finalId, groupValue);
+	//}
+	//else if (auto trigger = Cast<UAkTrigger>(AudioType))
+	//{
+	//	TriggerMap.Add(finalId, trigger);
+	//}
+	//else if (auto rtpc = Cast<UAkRtpc>(AudioType))
+	//{
+	//	RtpcMap.Add(finalId, rtpc);
+	//}
+	//else if (auto initBank = Cast<UAkInitBank>(AudioType))
+	//{
+	//	InitBank = initBank;
+	//}
 	else
 	{
 		return false;
@@ -208,21 +223,23 @@ bool AkAssetDatabase::Remove(UAkAudioType* AudioType)
 	return AkToolBehavior::Get()->AkAssetDatabase_Remove(this, AudioType);
 }
 
-void AkAssetDatabase::CreateInitBankIfNeeded()
-{
-	FScopeLock autoLock(&InitBankLock);
-
-	if (!InitBank)
-	{
-		const FString InitBankPath = AkToolBehavior::Get()->AkAssetDatabase_GetInitBankPackagePath();
-		auto newInitBank = AssetToolsModule->Get().CreateAsset(TEXT("InitBank"), InitBankPath, UAkInitBank::StaticClass(), nullptr);
-		InitBank = Cast<UAkInitBank>(newInitBank);
-		if (InitBank)
-		{
-			InitBank->ID = AkUnrealHelper::InitBankID;
-		}
-	}
-}
+//void AkAssetDatabase::CreateInitBankIfNeeded()
+//{
+//	static const FGuid InitBankID{ 0x701ECBBD, 0x9C7B4030, 0x8CDB749E, 0xE5D1C7B9 };
+//
+//	FScopeLock autoLock(&InitBankLock);
+//
+//	if (!InitBank)
+//	{
+//		const FString InitBankPath = AkToolBehavior::Get()->AkAssetDatabase_GetInitBankPackagePath();
+//		auto newInitBank = AssetToolsModule->Get().CreateAsset(TEXT("InitBank"), InitBankPath, UAkInitBank::StaticClass(), nullptr);
+//		InitBank = Cast<UAkInitBank>(newInitBank);
+//		if (InitBank)
+//		{
+//			InitBank->ID = InitBankID;
+//		}
+//	}
+//}
 
 void AkAssetDatabase::RenameAsset(const UClass* Klass, const FGuid& Id, const FString& Name, const FString& AssetName, const FString& RelativePath, const FString& GroupId)
 {
@@ -248,10 +265,10 @@ void AkAssetDatabase::RenameAsset(const UClass* Klass, const FGuid& Id, const FS
 
 	TArray<FAssetRenameData> assetsToRename = { { FSoftObjectPath(objectPath), FSoftObjectPath(AssetPath) } };
 
-	if (auto akAudioEvent = Cast<UAkAudioEvent>(assetInstance))
-	{
-		renameLocalizedAssets(akAudioEvent, parentPath, AssetName, assetsToRename);
-	}
+	//if (auto akAudioEvent = Cast<UAkAudioEvent>(assetInstance))
+	//{
+	//	renameLocalizedAssets(akAudioEvent, parentPath, AssetName, assetsToRename);
+	//}
 
 	AssetToolsModule->Get().RenameAssets(assetsToRename);
 
@@ -265,6 +282,40 @@ UObject* AkAssetDatabase::CreateOrRenameAsset(const UClass* Klass, const FGuid& 
 	auto* AudioDevice = FAkAudioDevice::Get();
 
 	auto parentPath = RelativePath;
+
+		if (Klass == UAkAudioEvent::StaticClass())
+	{
+		bool bRemoved = parentPath.RemoveFromStart("Events", ESearchCase::Type::CaseSensitive);
+		if (!bRemoved)
+		{
+			parentPath.RemoveFromStart("/Events", ESearchCase::Type::CaseSensitive);
+		}
+
+		parentPath = "WwiseEvent" + parentPath;
+	}
+	else if (Klass == UAkAudioBank::StaticClass())
+	{
+		bool bRemoved = parentPath.RemoveFromStart("SoundBanks", ESearchCase::Type::CaseSensitive);
+		if (!bRemoved)
+		{
+			parentPath.RemoveFromStart("/SoundBanks", ESearchCase::Type::CaseSensitive);
+		}
+		parentPath = "WwiseBank" + parentPath;
+	}
+	else if (Klass == UAkAuxBus::StaticClass())
+	{
+		bool bRemoved = parentPath.RemoveFromStart("Master-Mixer Hierarchy", ESearchCase::Type::CaseSensitive);
+		if (!bRemoved)
+		{
+			parentPath.RemoveFromStart("/Master-Mixer Hierarchy", ESearchCase::Type::CaseSensitive);
+		}
+		parentPath = "WwiseAuxBus" + parentPath;
+	}
+	else
+	{
+		parentPath = "WwiseOther" + parentPath;
+	}
+
 	parentPath.RemoveFromEnd(Name);
 
 	auto AssetPackagePath = ObjectTools::SanitizeObjectPath(FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), parentPath));
@@ -273,7 +324,7 @@ UObject* AkAssetDatabase::CreateOrRenameAsset(const UClass* Klass, const FGuid& 
 	auto assetInstancePtr = AudioTypeMap.Find(Id);
 	if (!assetInstancePtr)
 	{
-		FString ValueName = AssetName;
+		//FString ValueName = AssetName;
 		auto assetInstance = Cast<UAkAudioType>(AssetToolsModule->Get().CreateAsset(AssetName, AssetPackagePath, const_cast<UClass*>(Klass), nullptr));
 		if (!assetInstance)
 		{
@@ -281,18 +332,18 @@ UObject* AkAssetDatabase::CreateOrRenameAsset(const UClass* Klass, const FGuid& 
 		}
 
 		assetInstance->ID = Id;
-		if (auto groupValue = Cast<UAkGroupValue>(assetInstance))
-		{
-			FString GroupName;
-			AssetName.Split(TEXT("-"), &GroupName, &ValueName);
-			groupValue->GroupID = GroupId;
+		//if (auto groupValue = Cast<UAkGroupValue>(assetInstance))
+		//{
+		//	FString GroupName;
+		//	AssetName.Split(TEXT("-"), &GroupName, &ValueName);
+		//	groupValue->GroupID = GroupId;
 
-			if(AudioDevice)
-				groupValue->GroupShortID = AudioDevice->GetIDFromString(GroupName);
-		}
+		//	if(AudioDevice)
+		//		groupValue->GroupShortID = AudioDevice->GetIDFromString(GroupName);
+		//}
 
-		if(AudioDevice)
-			assetInstance->ShortID = AudioDevice->GetIDFromString(ValueName);
+		//if(AudioDevice)
+		//	assetInstance->ShortID = AudioDevice->GetIDFromString(ValueName);
 
 		Add(Id, assetInstance);
 		PendingAssetCreates.Remove(Id);
@@ -308,10 +359,10 @@ UObject* AkAssetDatabase::CreateOrRenameAsset(const UClass* Klass, const FGuid& 
 	{
 		TArray<FAssetRenameData> assetsToRename = { { FSoftObjectPath(objectPath), FSoftObjectPath(AssetPath) } };
 
-		if (auto akAudioEvent = Cast<UAkAudioEvent>(assetInstance))
-		{
-			renameLocalizedAssets(akAudioEvent, parentPath, AssetName, assetsToRename);
-		}
+		//if (auto akAudioEvent = Cast<UAkAudioEvent>(assetInstance))
+		//{
+		//	renameLocalizedAssets(akAudioEvent, parentPath, AssetName, assetsToRename);
+		//}
 
 		if (GWarn && GWarn->GetScopeStack().Num() > 0)
 		{
@@ -331,42 +382,42 @@ UObject* AkAssetDatabase::CreateOrRenameAsset(const UClass* Klass, const FGuid& 
 	return assetInstance;
 }
 
-void AkAssetDatabase::RenameGroupValues(const FGuid& GroupId, const FString& GroupName, const FString& Path)
-{
-	TArray<FAssetData> findResults;
-
-	{
-		FScopeLock autoLock(&GroupValueMap.CriticalSection);
-		for (auto& entry : GroupValueMap.TypeMap)
-		{
-			if (entry.Value->GroupID == GroupId)
-			{
-				findResults.Emplace(entry.Value);
-			}
-		}
-	}
-
-	if (findResults.Num() <= 0)
-		return;
-
-	auto AssetPackagePath = ObjectTools::SanitizeObjectPath(FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), Path));
-
-	TArray<FAssetRenameData> assetsToRename;
-	for (auto& assetData : findResults)
-	{
-		FString valueName;
-		assetData.AssetName.ToString().Split(TEXT("-"), nullptr, &valueName);
-		auto newAssetPath = FPaths::Combine(AssetPackagePath, FString::Printf(TEXT("%s-%s.%s-%s"), *GroupName, *valueName, *GroupName, *valueName));
-		assetsToRename.Emplace(assetData.ToSoftObjectPath(), FSoftObjectPath(newAssetPath));
-	}
-
-	if (assetsToRename.Num() > 0)
-	{
-		AssetToolsModule->Get().RenameAssets(assetsToRename);
-
-		removeEmptyFolders(assetsToRename);
-	}
-}
+//void AkAssetDatabase::RenameGroupValues(const FGuid& GroupId, const FString& GroupName, const FString& Path)
+//{
+//	TArray<FAssetData> findResults;
+//
+//	{
+//		FScopeLock autoLock(&GroupValueMap.CriticalSection);
+//		for (auto& entry : GroupValueMap.TypeMap)
+//		{
+//			if (entry.Value->GroupID == GroupId)
+//			{
+//				findResults.Emplace(entry.Value);
+//			}
+//		}
+//	}
+//
+//	if (findResults.Num() <= 0)
+//		return;
+//
+//	auto AssetPackagePath = UPackageTools::SanitizePackageName(FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), Path));
+//
+//	TArray<FAssetRenameData> assetsToRename;
+//	for (auto& assetData : findResults)
+//	{
+//		FString valueName;
+//		assetData.AssetName.ToString().Split(TEXT("-"), nullptr, &valueName);
+//		auto newAssetPath = FPaths::Combine(AssetPackagePath, FString::Printf(TEXT("%s-%s.%s-%s"), *GroupName, *valueName, *GroupName, *valueName));
+//		assetsToRename.Emplace(assetData.ToSoftObjectPath(), FSoftObjectPath(newAssetPath));
+//	}
+//
+//	if (assetsToRename.Num() > 0)
+//	{
+//		AssetToolsModule->Get().RenameAssets(assetsToRename);
+//
+//		removeEmptyFolders(assetsToRename);
+//	}
+//}
 
 void AkAssetDatabase::DeleteAsset(const FGuid& Id)
 {
@@ -382,7 +433,7 @@ void AkAssetDatabase::DeleteAsset(const FGuid& Id)
 	Remove(*foundAssetIt);
 
 	TArray<FAssetData> assetsToDelete = { *foundAssetIt };
-	FillAssetsToDelete(Cast<UAkAudioType>(*foundAssetIt), assetsToDelete);
+	//FillAssetsToDelete(Cast<UAkAudioType>(*foundAssetIt), assetsToDelete);
 
 	if (assetsToDelete.Num() > 0)
 	{
@@ -410,7 +461,7 @@ void AkAssetDatabase::DeleteAssets(const TSet<FGuid>& AssetsId)
 		Remove(foundAsset);
 
 		assetsToDelete.Emplace(*foundAssetIt);
-		FillAssetsToDelete(Cast<UAkAudioType>(foundAsset), assetsToDelete);
+		//FillAssetsToDelete(Cast<UAkAudioType>(foundAsset), assetsToDelete);
 	}
 
 	if (assetsToDelete.Num() > 0)
@@ -419,30 +470,30 @@ void AkAssetDatabase::DeleteAssets(const TSet<FGuid>& AssetsId)
 	}
 }
 
-void AkAssetDatabase::FillAssetsToDelete(UAkAudioType* Asset, TArray<FAssetData>& AssetDataToDelete)
-{
-	if (auto akAudioEvent = Cast<UAkAudioEvent>(Asset))
-	{
-		for (auto& entry : akAudioEvent->LocalizedPlatformAssetDataMap)
-		{
-			if (auto platformData = entry.Value.LoadSynchronous())
-			{
-				AssetDataToDelete.Emplace(platformData);
-
-				TArray<TSoftObjectPtr<UAkMediaAsset>> mediaList;
-				platformData->GetMediaList(mediaList);
-				processMediaToDelete(platformData, mediaList, AssetDataToDelete);
-			}
-		}
-	}
-
-	if (auto assetBase = Cast<UAkAssetBase>(Asset))
-	{
-		TArray<TSoftObjectPtr<UAkMediaAsset>> mediaList;
-		assetBase->GetMediaList(mediaList);
-		processMediaToDelete(assetBase, mediaList, AssetDataToDelete);
-	}
-}
+//void AkAssetDatabase::FillAssetsToDelete(UAkAudioType* Asset, TArray<FAssetData>& AssetDataToDelete)
+//{
+//	if (auto akAudioEvent = Cast<UAkAudioEvent>(Asset))
+//	{
+//		for (auto& entry : akAudioEvent->LocalizedPlatformAssetDataMap)
+//		{
+//			if (auto platformData = entry.Value.LoadSynchronous())
+//			{
+//				AssetDataToDelete.Emplace(platformData);
+//
+//				TArray<TSoftObjectPtr<UAkMediaAsset>> mediaList;
+//				platformData->GetMediaList(mediaList);
+//				processMediaToDelete(platformData, mediaList, AssetDataToDelete);
+//			}
+//		}
+//	}
+//
+//	if (auto assetBase = Cast<UAkAssetBase>(Asset))
+//	{
+//		TArray<TSoftObjectPtr<UAkMediaAsset>> mediaList;
+//		assetBase->GetMediaList(mediaList);
+//		processMediaToDelete(assetBase, mediaList, AssetDataToDelete);
+//	}
+//}
 
 void AkAssetDatabase::MoveAllAssets(const FString& OldBaseAssetPath, const FString& NewBaseAssetPath)
 {
@@ -525,10 +576,10 @@ void AkAssetDatabase::MoveWorkUnit(const FString& OldWorkUnitPath, const FString
 
 			assetsToRename.Emplace(FSoftObjectPath(packagePath), FSoftObjectPath(newPackagePath));
 
-			if (auto* akAudioEvent = Cast<UAkAudioEvent>(assetData.GetAsset()))
-			{
-				renameLocalizedAssets(akAudioEvent, sanitizedNewWorkUnitPath, assetName, assetsToRename);
-			}
+			//if (auto* akAudioEvent = Cast<UAkAudioEvent>(assetData.GetAsset()))
+			//{
+			//	renameLocalizedAssets(akAudioEvent, sanitizedNewWorkUnitPath, assetName, assetsToRename);
+			//}
 		}
 	}
 
@@ -627,11 +678,11 @@ bool AkAssetDatabase::CanBeDropped(const FAssetData& AssetData, FName PackagePat
 		}
 	};
 
-	if (akAudioType->IsA<UAkAcousticTexture>())
-	{
-		return isValidName(AcousticTextureMap, assetName);
-	}
-	else if (akAudioType->IsA<UAkAudioEvent>())
+	//if (akAudioType->IsA<UAkAcousticTexture>())
+	//{
+	//	return isValidName(AcousticTextureMap, assetName);
+	//}
+	if (akAudioType->IsA<UAkAudioEvent>())
 	{
 		return isValidName(EventMap, assetName);
 	}
@@ -639,55 +690,101 @@ bool AkAssetDatabase::CanBeDropped(const FAssetData& AssetData, FName PackagePat
 	{
 		return isValidName(AuxBusMap, assetName);
 	}
-	else if (akAudioType->IsA<UAkGroupValue>())
+	else if (akAudioType->IsA<UAkAudioBank>())
 	{
-		return isValidName(GroupValueMap, assetName);
+		return isValidName(BankMap, assetName);
 	}
-	else if (akAudioType->IsA<UAkTrigger>())
-	{
-		return isValidName(TriggerMap, assetName);
-	}
-	else if (akAudioType->IsA<UAkRtpc>())
-	{
-		return isValidName(RtpcMap, assetName);
-	}
+	//else if (akAudioType->IsA<UAkGroupValue>())
+	//{
+	//	return isValidName(GroupValueMap, assetName);
+	//}
+	//else if (akAudioType->IsA<UAkTrigger>())
+	//{
+	//	return isValidName(TriggerMap, assetName);
+	//}
+	//else if (akAudioType->IsA<UAkRtpc>())
+	//{
+	//	return isValidName(RtpcMap, assetName);
+	//}
 
 	return false;
 }
 
-void AkAssetDatabase::processMediaToDelete(UObject* Asset, const TArray<TSoftObjectPtr<UAkMediaAsset>>& MediaList, TArray<FAssetData>& AssetDataToDelete)
+void AkAssetDatabase::AssignBank()
 {
-	auto assetPackageName = Asset->GetOutermost()->GetFName();
+	const UAkSettingsPerUser* AkSettings = GetDefault<UAkSettingsPerUser>();
 
-	for (auto& media : MediaList)
+	if (!AkSettings->EnableAutomaticAssetSynchronization)
+		return;
+
+	if (BankToEventsMap.Num() <= 0)
+		return;
+
+	for (auto Map : BankToEventsMap)
 	{
-		auto mediaPackageName = FName(*media.GetLongPackageName());
-
-		TArray<FName> dependencies;
-#if UE_4_26_OR_LATER
-		AssetRegistryModule->Get().GetReferencers(mediaPackageName, dependencies, UE::AssetRegistry::EDependencyCategory::All);
-#else
-		AssetRegistryModule->Get().GetReferencers(mediaPackageName, dependencies, EAssetRegistryDependencyType::All);
-#endif
-
-		if ((dependencies.Num() == 1 && dependencies[0] == assetPackageName) || dependencies.Num() == 0)
+		auto BankPtr = BanksNameMap.Find(Map.Key);
+		if (BankPtr == nullptr)
+			return;
+		if (*BankPtr)
 		{
-			AssetDataToDelete.Emplace(media.LoadSynchronous());
+			auto BankRef = *BankPtr;
+			if (BankRef)
+			{
+				for (auto EventShortId : Map.Value)
+				{
+					auto EventPtr = EventsNameMap.Find(EventShortId);
+					if (EventPtr && *EventPtr)
+					{
+						auto EventRef = *EventPtr;
+						if (EventRef)
+						{
+							if (EventRef->RequiredBank == nullptr || EventRef->RequiredBank != BankRef)
+							{
+								EventRef->RequiredBank = BankRef;
+								EventRef->GetOutermost()->MarkPackageDirty();
+							}
+
+						}
+					}
+				}
+			}
 		}
 	}
 }
 
-void AkAssetDatabase::renameLocalizedAssets(const UAkAudioEvent* akAudioEvent, const FString& parentPath, const FString& AssetName, TArray<FAssetRenameData>& assetsToRename)
-{
-	auto localizedAssetPath = AkUnrealHelper::GetLocalizedAssetPackagePath();
-	for (auto& entry : akAudioEvent->LocalizedPlatformAssetDataMap)
-	{
-		auto localizedPackagePath = ObjectTools::SanitizeObjectPath(FPaths::Combine(localizedAssetPath, entry.Key, parentPath));
-		auto newLocalizedAssetPath = FPaths::Combine(localizedPackagePath, AssetName + TEXT(".") + AssetName);
-		entry.Value.LoadSynchronous();
-		assetsToRename.Emplace(entry.Value.ToSoftObjectPath(), FSoftObjectPath(newLocalizedAssetPath));
-	}
-}
+//void AkAssetDatabase::processMediaToDelete(UObject* Asset, const TArray<TSoftObjectPtr<UAkMediaAsset>>& MediaList, TArray<FAssetData>& AssetDataToDelete)
+//{
+//	auto assetPackageName = Asset->GetOutermost()->GetFName();
+//
+//	for (auto& media : MediaList)
+//	{
+//		auto mediaPackageName = FName(*media.GetLongPackageName());
+//
+//		TArray<FName> dependencies;
+//#if UE_4_26_OR_LATER
+//		AssetRegistryModule->Get().GetReferencers(mediaPackageName, dependencies, UE::AssetRegistry::EDependencyCategory::All);
+//#else
+//		AssetRegistryModule->Get().GetReferencers(mediaPackageName, dependencies, EAssetRegistryDependencyType::All);
+//#endif
+//
+//		if ((dependencies.Num() == 1 && dependencies[0] == assetPackageName) || dependencies.Num() == 0)
+//		{
+//			AssetDataToDelete.Emplace(media.LoadSynchronous());
+//		}
+//	}
+//}
+
+//void AkAssetDatabase::renameLocalizedAssets(const UAkAudioEvent* akAudioEvent, const FString& parentPath, const FString& AssetName, TArray<FAssetRenameData>& assetsToRename)
+//{
+//	auto localizedAssetPath = AkUnrealHelper::GetLocalizedAssetPackagePath();
+//	for (auto& entry : akAudioEvent->LocalizedPlatformAssetDataMap)
+//	{
+//		auto localizedPackagePath = ObjectTools::SanitizeObjectPath(FPaths::Combine(localizedAssetPath, entry.Key, parentPath));
+//		auto newLocalizedAssetPath = FPaths::Combine(localizedPackagePath, AssetName + TEXT(".") + AssetName);
+//		entry.Value.LoadSynchronous();
+//		assetsToRename.Emplace(entry.Value.ToSoftObjectPath(), FSoftObjectPath(newLocalizedAssetPath));
+//	}
+//}
 
 void AkAssetDatabase::removeEmptyFolders(const TArray<FAssetRenameData>& AssetsToRename)
 {
@@ -724,15 +821,15 @@ void AkAssetDatabase::removeEmptyFolders(const TArray<FAssetRenameData>& AssetsT
 bool AkAssetDatabase::IsAkAudioType(const FAssetData& AssetData)
 {
 	static const TArray<FName> AkAudioClassNames = {
-		UAkAcousticTexture::StaticClass()->GetFName(),
+		//UAkAcousticTexture::StaticClass()->GetFName(),
 		UAkAudioBank::StaticClass()->GetFName(),
 		UAkAudioEvent::StaticClass()->GetFName(),
 		UAkAuxBus::StaticClass()->GetFName(),
-		UAkInitBank::StaticClass()->GetFName(),
-		UAkRtpc::StaticClass()->GetFName(),
-		UAkStateValue::StaticClass()->GetFName(),
-		UAkSwitchValue::StaticClass()->GetFName(),
-		UAkTrigger::StaticClass()->GetFName()
+		//UAkInitBank::StaticClass()->GetFName(),
+		//UAkRtpc::StaticClass()->GetFName(),
+		//UAkStateValue::StaticClass()->GetFName(),
+		//UAkSwitchValue::StaticClass()->GetFName(),
+		//UAkTrigger::StaticClass()->GetFName()
 	};
 
 	if (AkAudioClassNames.Contains(AssetData.AssetClass))
@@ -749,8 +846,8 @@ void AkAssetDatabase::onAssetAdded(const FAssetData& NewAssetData)
 		auto akAudioType = Cast<UAkAudioType>(NewAssetData.GetAsset());
 		if (akAudioType->ID.IsValid())
 		{
-			if (AkUnrealHelper::IsUsingEventBased() && akAudioType->GetClass() != UAkAudioBank::StaticClass())
-			{
+			//if (AkUnrealHelper::IsUsingEventBased() && akAudioType->GetClass() != UAkAudioBank::StaticClass())
+			//{
 				FString assetBaseFolder = AkAssetDatabase::Get().GetBaseFolderForAssetType(akAudioType->GetClass());
 				FString assetBasePath = FPaths::Combine(AkUnrealHelper::GetBaseAssetPackagePath(), assetBaseFolder);
 				auto newPath = NewAssetData.ObjectPath.ToString();
@@ -787,7 +884,7 @@ void AkAssetDatabase::onAssetAdded(const FAssetData& NewAssetData)
 					CopiedAssetsToUndo.Add(NewAssetData);
 					return;
 				}
-			}
+			//}
 
 			Add(akAudioType->ID, akAudioType);
 		}
@@ -814,10 +911,10 @@ void AkAssetDatabase::onAssetRenamed(const FAssetData& NewAssetData, const FStri
 {
 	static const auto InvalidCharacters = FString(TEXT(":<>*?\"\\/|.%"));
 
-	if (!AkUnrealHelper::IsUsingEventBased())
-	{
-		return;
-	}
+	//if (!AkUnrealHelper::IsUsingEventBased())
+	//{
+	//	return;
+	//}
 
 	auto assetInstance = Cast<UAkAudioType>(NewAssetData.GetAsset());
 	if (!assetInstance)

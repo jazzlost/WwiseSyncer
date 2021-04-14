@@ -1,7 +1,7 @@
 #include "AkToolBehavior.h"
 
 #include "AkUnrealHelper.h"
-#include "AkEventBasedToolBehavior.h"
+//#include "AkEventBasedToolBehavior.h"
 #include "AkLegacyToolBehavior.h"
 
 AkToolBehavior* AkToolBehavior::s_Instance = nullptr;
@@ -10,14 +10,14 @@ AkToolBehavior* AkToolBehavior::Get()
 {
 	if (!s_Instance)
 	{
-		if (AkUnrealHelper::IsUsingEventBased())
-		{
-			s_Instance = new AkEventBasedToolBehavior;
-		}
-		else
-		{
+		//if (AkUnrealHelper::IsUsingEventBased())
+		//{
+		//	s_Instance = new AkEventBasedToolBehavior;
+		//}
+		//else
+		//{
 			s_Instance = new AkLegacyToolBehavior;
-		}
+		//}
 	}
 
 	return s_Instance;

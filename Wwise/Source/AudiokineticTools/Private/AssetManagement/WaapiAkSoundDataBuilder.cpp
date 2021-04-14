@@ -216,7 +216,7 @@ void WaapiAkSoundDataBuilder::DoWork()
 
 	args->SetArrayField(WwiseWaapiHelper::SOUNDBANKS, soundBanks);
 	args->SetBoolField(WwiseWaapiHelper::SKIP_LANGUAGES, initParameters.SkipLanguages);
-	args->SetBoolField(WwiseWaapiHelper::REBUILD_INIT_BANK, akAssetDatabase.InitBank->NeedsRebuild(platformsToBuild, languagesToBuild, &infoCache));
+	//args->SetBoolField(WwiseWaapiHelper::REBUILD_INIT_BANK, akAssetDatabase.InitBank->NeedsRebuild(platformsToBuild, languagesToBuild, &infoCache));
 
 	bool waapiCallSuccess = false;
 	{
@@ -353,7 +353,7 @@ void WaapiAkSoundDataBuilder::onSoundBankGenerated(uint64_t id, TSharedPtr<FJson
 
 		{
 			FScopeLock autoLock(&akAssetDatabase.InitBankLock);
-			akAssetDatabase.InitBank->AvailableAudioCultures.AddUnique(language);
+			//akAssetDatabase.InitBank->AvailableAudioCultures.AddUnique(language);
 		}
 	}
 

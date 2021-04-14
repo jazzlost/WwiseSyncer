@@ -100,14 +100,14 @@ void AkSoundDataBuilder::Init()
 		akAssetDatabase.Init();
 	}
 
-	{
-		FScopeLock autoLock(&akAssetDatabase.InitBankLock);
-		if (akAssetDatabase.InitBank->DefaultLanguage != defaultLanguage)
-		{
-			akAssetDatabase.InitBank->DefaultLanguage = defaultLanguage;
-			markAssetDirty(akAssetDatabase.InitBank);
-		}
-	}
+	//{
+	//	FScopeLock autoLock(&akAssetDatabase.InitBankLock);
+	//	if (akAssetDatabase.InitBank->DefaultLanguage != defaultLanguage)
+	//	{
+	//		akAssetDatabase.InitBank->DefaultLanguage = defaultLanguage;
+	//		markAssetDirty(akAssetDatabase.InitBank);
+	//	}
+	//}
 }
 
 void AkSoundDataBuilder::createNotificationItem()
@@ -213,177 +213,178 @@ void AkSoundDataBuilder::notifyGenerationSucceeded()
 
 bool AkSoundDataBuilder::processMediaEntry(MediaToCookMap& mediaToCookMap, const FString& platform, TArray<TSoftObjectPtr<UAkMediaAsset>>& medias, const TSharedPtr<FJsonObject>& mediaData, bool isStreamed, bool isInitBank)
 {
-	FString stringId = mediaData->GetStringField("Id");
+	//FString stringId = mediaData->GetStringField("Id");
 
-	uint32 id = FCString::Atoi64(*stringId);
+	//uint32 id = FCString::Atoi64(*stringId);
 
-	FString language = mediaData->GetStringField("Language");
+	//FString language = mediaData->GetStringField("Language");
 
-	FString cachePath = mediaData->GetStringField("Path");
+	//FString cachePath = mediaData->GetStringField("Path");
 
-	FString mediaName = FPaths::GetBaseFilename(mediaData->GetStringField("ShortName"));
+	//FString mediaName = FPaths::GetBaseFilename(mediaData->GetStringField("ShortName"));
 
-	FSoftObjectPath assetPath;
+	//FSoftObjectPath assetPath;
 
-	bool useDeviceMemory = false;
-	FString stringUseDeviceMemory;
-	if (mediaData->TryGetStringField(TEXT("UseDeviceMemory"), stringUseDeviceMemory))
-	{
-		useDeviceMemory = (stringUseDeviceMemory == TEXT("true"));
-	}
+	//bool useDeviceMemory = false;
+	//FString stringUseDeviceMemory;
+	//if (mediaData->TryGetStringField(TEXT("UseDeviceMemory"), stringUseDeviceMemory))
+	//{
+	//	useDeviceMemory = (stringUseDeviceMemory == TEXT("true"));
+	//}
 
-	bool usingReferenceLanguageAsStandIn = false;
-	if (mediaData->TryGetBoolField(TEXT("UsingReferenceLanguageAsStandIn"), usingReferenceLanguageAsStandIn) && usingReferenceLanguageAsStandIn)
-	{
-		language = defaultLanguage;
-	}
+	//bool usingReferenceLanguageAsStandIn = false;
+	//if (mediaData->TryGetBoolField(TEXT("UsingReferenceLanguageAsStandIn"), usingReferenceLanguageAsStandIn) && usingReferenceLanguageAsStandIn)
+	//{
+	//	language = defaultLanguage;
+	//}
 
-	bool changed = false;
+	//bool changed = false;
 
-	FString subFolder;
-	if (splitMediaPerFolder)
-	{
-		subFolder = FString::Printf(TEXT("%02x/%02x"), (id >> 24) & 0xFF, (id >> 16) & 0xFF);
-	}
+	//FString subFolder;
+	//if (splitMediaPerFolder)
+	//{
+	//	subFolder = FString::Printf(TEXT("%02x/%02x"), (id >> 24) & 0xFF, (id >> 16) & 0xFF);
+	//}
 
-	if (language != TEXT("SFX"))
-	{
-		assetPath = ObjectTools::SanitizeObjectPath(FPaths::Combine(localizedPackagePath, language, AkUnrealHelper::MediaFolderName, subFolder, stringId + TEXT(".") + stringId));
-	}
-	else
-	{
-		language.Empty();
+	//if (language != TEXT("SFX"))
+	//{
+	//	assetPath = ObjectTools::SanitizeObjectPath(FPaths::Combine(localizedPackagePath, language, AkUnrealHelper::MediaFolderName, subFolder, stringId + TEXT(".") + stringId));
+	//}
+	//else
+	//{
+	//	language.Empty();
 
-		assetPath = ObjectTools::SanitizeObjectPath(FPaths::Combine(basePackagePath, AkUnrealHelper::MediaFolderName, subFolder, stringId + TEXT(".") + stringId));
-	}
+	//	assetPath = ObjectTools::SanitizeObjectPath(FPaths::Combine(basePackagePath, AkUnrealHelper::MediaFolderName, subFolder, stringId + TEXT(".") + stringId));
+	//}
 
-	if (isInitBank)
-	{
-		FScopeLock autoLock(&mediaLock);
-		if (mediaIdToAssetPath.Contains(id))
-		{
-			return false;
-		}
-	}
+	//if (isInitBank)
+	//{
+	//	FScopeLock autoLock(&mediaLock);
+	//	if (mediaIdToAssetPath.Contains(id))
+	//	{
+	//		return false;
+	//	}
+	//}
 
-	if (!medias.ContainsByPredicate([&assetPath](const TSoftObjectPtr<UAkMediaAsset>& item) { return item.GetUniqueID() == assetPath; }))
-	{
-		medias.Emplace(assetPath);
+	//if (!medias.ContainsByPredicate([&assetPath](const TSoftObjectPtr<UAkMediaAsset>& item) { return item.GetUniqueID() == assetPath; }))
+	//{
+	//	medias.Emplace(assetPath);
 
-		changed = true;
+	//	changed = true;
 
-		{
-			FScopeLock autoLock(&mediaLock);
+	//	{
+	//		FScopeLock autoLock(&mediaLock);
 
-			if (!mediaIdToAssetPath.Contains(id))
-			{
-				mediaIdToAssetPath.Add(id, assetPath);
-			}
-		}
-	}
+	//		if (!mediaIdToAssetPath.Contains(id))
+	//		{
+	//			mediaIdToAssetPath.Add(id, assetPath);
+	//		}
+	//	}
+	//}
 
-	{
-		FScopeLock autoLock(&mediaLock);
+	//{
+	//	FScopeLock autoLock(&mediaLock);
 
-		auto* mediaAssetToCookIt = mediaToCookMap.Find(id);
+	//	auto* mediaAssetToCookIt = mediaToCookMap.Find(id);
 
-		if (mediaAssetToCookIt)
-		{
-			MediaAssetPerPlatformData& parsedPlatformData = mediaAssetToCookIt->Get()->ParsedPerPlatformData.FindOrAdd(platform);
+	//	if (mediaAssetToCookIt)
+	//	{
+	//		MediaAssetPerPlatformData& parsedPlatformData = mediaAssetToCookIt->Get()->ParsedPerPlatformData.FindOrAdd(platform);
 
-			FString stringPrefetchSize;
-			if (mediaData->TryGetStringField("PrefetchSize", stringPrefetchSize))
-			{
-				uint32 parsedPrefetchSize = static_cast<uint32>(FCString::Atoi(*stringPrefetchSize));
-				
-				parsedPlatformData.PrefetchSize = FMath::Max(parsedPlatformData.PrefetchSize, parsedPrefetchSize);
-			}
+	//		FString stringPrefetchSize;
+	//		if (mediaData->TryGetStringField("PrefetchSize", stringPrefetchSize))
+	//		{
+	//			uint32 parsedPrefetchSize = static_cast<uint32>(FCString::Atoi(*stringPrefetchSize));
+	//			
+	//			parsedPlatformData.PrefetchSize = FMath::Max(parsedPlatformData.PrefetchSize, parsedPrefetchSize);
+	//		}
 
-			parsedPlatformData.UseDeviceMemory = useDeviceMemory;
-			parsedPlatformData.IsStreamed = isStreamed ? true : parsedPlatformData.IsStreamed;
-		}
-		else
-		{
-			auto& newMediaToCookEntry = mediaToCookMap.Emplace(id);
-			newMediaToCookEntry = MakeShared<MediaAssetToCook>();
-			newMediaToCookEntry->Id = id;
-			newMediaToCookEntry->AssetPath = assetPath;
-			newMediaToCookEntry->Language = language;
-			newMediaToCookEntry->CachePath = cachePath;
-			newMediaToCookEntry->MediaName = mediaName;
+	//		parsedPlatformData.UseDeviceMemory = useDeviceMemory;
+	//		parsedPlatformData.IsStreamed = isStreamed ? true : parsedPlatformData.IsStreamed;
+	//	}
+	//	else
+	//	{
+	//		auto& newMediaToCookEntry = mediaToCookMap.Emplace(id);
+	//		newMediaToCookEntry = MakeShared<MediaAssetToCook>();
+	//		newMediaToCookEntry->Id = id;
+	//		newMediaToCookEntry->AssetPath = assetPath;
+	//		newMediaToCookEntry->Language = language;
+	//		newMediaToCookEntry->CachePath = cachePath;
+	//		newMediaToCookEntry->MediaName = mediaName;
 
-			MediaAssetPerPlatformData& parsedPlatformData = newMediaToCookEntry->ParsedPerPlatformData.FindOrAdd(platform);
-			parsedPlatformData.IsStreamed = isStreamed;
-			parsedPlatformData.PrefetchSize = 0;
-			parsedPlatformData.UseDeviceMemory = useDeviceMemory;
-		}
-	}
+	//		MediaAssetPerPlatformData& parsedPlatformData = newMediaToCookEntry->ParsedPerPlatformData.FindOrAdd(platform);
+	//		parsedPlatformData.IsStreamed = isStreamed;
+	//		parsedPlatformData.PrefetchSize = 0;
+	//		parsedPlatformData.UseDeviceMemory = useDeviceMemory;
+	//	}
+	//}
 
-	return changed;
+	//return changed;
+	return false;
 }
 
 void AkSoundDataBuilder::parseGameSyncs(const TSharedPtr<FJsonObject>& soundBankJson)
 {
-	if (!AkUnrealHelper::IsUsingEventBased())
-	{
-		return;
-	}
+	//if (!AkUnrealHelper::IsUsingEventBased())
+	//{
+	//	return;
+	//}
 
-	const TArray<TSharedPtr<FJsonValue>>* stateGroups = nullptr;
-	if (soundBankJson->TryGetArrayField("StateGroups", stateGroups))
-	{
-		for (auto& stateGroupValueJson : *stateGroups)
-		{
-			auto& stateGroupJson = stateGroupValueJson->AsObject();
+	//const TArray<TSharedPtr<FJsonValue>>* stateGroups = nullptr;
+	//if (soundBankJson->TryGetArrayField("StateGroups", stateGroups))
+	//{
+	//	for (auto& stateGroupValueJson : *stateGroups)
+	//	{
+	//		auto& stateGroupJson = stateGroupValueJson->AsObject();
 
-			FString stringGroupId = stateGroupJson->GetStringField("Id");
-			uint32 groupId = static_cast<uint32>(FCString::Atoi64(*stringGroupId));
+	//		FString stringGroupId = stateGroupJson->GetStringField("Id");
+	//		uint32 groupId = static_cast<uint32>(FCString::Atoi64(*stringGroupId));
 
-			auto& statesJson = stateGroupJson->GetArrayField("States");
+	//		auto& statesJson = stateGroupJson->GetArrayField("States");
 
-			for (auto& stateValueJson : statesJson)
-			{
-				parseGroupValue(stateValueJson->AsObject(), groupId);
-			}
-		}
-	}
+	//		for (auto& stateValueJson : statesJson)
+	//		{
+	//			parseGroupValue(stateValueJson->AsObject(), groupId);
+	//		}
+	//	}
+	//}
 
-	const TArray<TSharedPtr<FJsonValue>>* switchGroups = nullptr;
-	if (soundBankJson->TryGetArrayField("SwitchGroups", switchGroups))
-	{
-		for (auto& switchGroupValueJson : *switchGroups)
-		{
-			auto& switchGroupJson = switchGroupValueJson->AsObject();
+	//const TArray<TSharedPtr<FJsonValue>>* switchGroups = nullptr;
+	//if (soundBankJson->TryGetArrayField("SwitchGroups", switchGroups))
+	//{
+	//	for (auto& switchGroupValueJson : *switchGroups)
+	//	{
+	//		auto& switchGroupJson = switchGroupValueJson->AsObject();
 
-			FString stringGroupId = switchGroupJson->GetStringField("Id");
-			uint32 groupId = static_cast<uint32>(FCString::Atoi64(*stringGroupId));
+	//		FString stringGroupId = switchGroupJson->GetStringField("Id");
+	//		uint32 groupId = static_cast<uint32>(FCString::Atoi64(*stringGroupId));
 
-			auto& switchesJson = switchGroupJson->GetArrayField("Switches");
+	//		auto& switchesJson = switchGroupJson->GetArrayField("Switches");
 
-			for (auto& switchValueJson : switchesJson)
-			{
-				parseGroupValue(switchValueJson->AsObject(), groupId);
-			}
-		}
-	}
+	//		for (auto& switchValueJson : switchesJson)
+	//		{
+	//			parseGroupValue(switchValueJson->AsObject(), groupId);
+	//		}
+	//	}
+	//}
 
-	const TArray<TSharedPtr<FJsonValue>>* gameParameters = nullptr;
-	if (soundBankJson->TryGetArrayField("GameParameters", gameParameters))
-	{
-		for (auto& gameParameterJsonValue : *gameParameters)
-		{
-			parseGameParameter(gameParameterJsonValue->AsObject());
-		}
-	}
+	//const TArray<TSharedPtr<FJsonValue>>* gameParameters = nullptr;
+	//if (soundBankJson->TryGetArrayField("GameParameters", gameParameters))
+	//{
+	//	for (auto& gameParameterJsonValue : *gameParameters)
+	//	{
+	//		parseGameParameter(gameParameterJsonValue->AsObject());
+	//	}
+	//}
 
-	const TArray<TSharedPtr<FJsonValue>>* triggers = nullptr;
-	if (soundBankJson->TryGetArrayField("IncludedTriggers", triggers))
-	{
-		for (auto& triggerJsonValue : *triggers)
-		{
-			parseTrigger(triggerJsonValue->AsObject());
-		}
-	}
+	//const TArray<TSharedPtr<FJsonValue>>* triggers = nullptr;
+	//if (soundBankJson->TryGetArrayField("IncludedTriggers", triggers))
+	//{
+	//	for (auto& triggerJsonValue : *triggers)
+	//	{
+	//		parseTrigger(triggerJsonValue->AsObject());
+	//	}
+	//}
 }
 
 bool AkSoundDataBuilder::parseBankHash(UAkAssetData* bankData, const TSharedPtr<FJsonObject>& soundBankJson)
@@ -406,125 +407,126 @@ bool AkSoundDataBuilder::parseBankHash(UAkAssetData* bankData, const TSharedPtr<
 
 void AkSoundDataBuilder::parseGroupValue(const TSharedPtr<FJsonObject>& groupValueObject, uint32 groupId)
 {
-	FString stringGuid = groupValueObject->GetStringField("GUID");
+	//FString stringGuid = groupValueObject->GetStringField("GUID");
 
-	FGuid guid;
-	FGuid::ParseExact(stringGuid, EGuidFormats::DigitsWithHyphensInBraces, guid);
+	//FGuid guid;
+	//FGuid::ParseExact(stringGuid, EGuidFormats::DigitsWithHyphensInBraces, guid);
 
-	if (auto groupValueIt = AkAssetDatabase::Get().GroupValueMap.Find(guid))
-	{
-		auto groupValue = *groupValueIt;
+	//if (auto groupValueIt = AkAssetDatabase::Get().GroupValueMap.Find(guid))
+	//{
+	//	auto groupValue = *groupValueIt;
 
-		FString stringId = groupValueObject->GetStringField("Id");
-		uint32 valueId = static_cast<uint32>(FCString::Atoi64(*stringId));
+	//	FString stringId = groupValueObject->GetStringField("Id");
+	//	uint32 valueId = static_cast<uint32>(FCString::Atoi64(*stringId));
 
-		bool changed = false;
+	//	bool changed = false;
 
-		if (groupValue->GroupShortID != groupId)
-		{
-			groupValue->GroupShortID = groupId;
-			changed = true;
-		}
+	//	if (groupValue->GroupShortID != groupId)
+	//	{
+	//		groupValue->GroupShortID = groupId;
+	//		changed = true;
+	//	}
 
-		if (groupValue->ShortID != valueId)
-		{
-			groupValue->ShortID = valueId;
-			changed = true;
-		}
+	//	if (groupValue->ShortID != valueId)
+	//	{
+	//		groupValue->ShortID = valueId;
+	//		changed = true;
+	//	}
 
-		if (changed)
-		{
-			markAssetDirty(groupValue);
-		}
-	}
+	//	if (changed)
+	//	{
+	//		markAssetDirty(groupValue);
+	//	}
+	//}
 }
 
 void AkSoundDataBuilder::parseGameParameter(const TSharedPtr<FJsonObject>& gameParameterObject)
 {
-	FString stringGuid = gameParameterObject->GetStringField("GUID");
+	//FString stringGuid = gameParameterObject->GetStringField("GUID");
 
-	FGuid guid;
-	FGuid::ParseExact(stringGuid, EGuidFormats::DigitsWithHyphensInBraces, guid);
+	//FGuid guid;
+	//FGuid::ParseExact(stringGuid, EGuidFormats::DigitsWithHyphensInBraces, guid);
 
-	if (auto rtpcIt = AkAssetDatabase::Get().RtpcMap.Find(guid))
-	{
-		auto rtpc = *rtpcIt;
+	//if (auto rtpcIt = AkAssetDatabase::Get().RtpcMap.Find(guid))
+	//{
+	//	auto rtpc = *rtpcIt;
 
-		FString stringId = gameParameterObject->GetStringField("Id");
-		uint32 valueId = static_cast<uint32>(FCString::Atoi64(*stringId));
+	//	FString stringId = gameParameterObject->GetStringField("Id");
+	//	uint32 valueId = static_cast<uint32>(FCString::Atoi64(*stringId));
 
-		bool changed = false;
+	//	bool changed = false;
 
-		if (rtpc->ShortID != valueId)
-		{
-			rtpc->ShortID = valueId;
-			changed = true;
-		}
+	//	if (rtpc->ShortID != valueId)
+	//	{
+	//		rtpc->ShortID = valueId;
+	//		changed = true;
+	//	}
 
-		if (changed)
-		{
-			markAssetDirty(rtpc);
-		}
-	}
+	//	if (changed)
+	//	{
+	//		markAssetDirty(rtpc);
+	//	}
+	//}
 }
 
 void AkSoundDataBuilder::parseTrigger(const TSharedPtr<FJsonObject>& triggerObject)
 {
-	FString stringGuid = triggerObject->GetStringField("GUID");
+	//FString stringGuid = triggerObject->GetStringField("GUID");
 
-	FGuid guid;
-	FGuid::ParseExact(stringGuid, EGuidFormats::DigitsWithHyphensInBraces, guid);
+	//FGuid guid;
+	//FGuid::ParseExact(stringGuid, EGuidFormats::DigitsWithHyphensInBraces, guid);
 
-	if (auto triggerIt = AkAssetDatabase::Get().TriggerMap.Find(guid))
-	{
-		auto trigger = *triggerIt;
+	//if (auto triggerIt = AkAssetDatabase::Get().TriggerMap.Find(guid))
+	//{
+	//	auto trigger = *triggerIt;
 
-		FString stringId = triggerObject->GetStringField("Id");
-		uint32 valueId = static_cast<uint32>(FCString::Atoi64(*stringId));
+	//	FString stringId = triggerObject->GetStringField("Id");
+	//	uint32 valueId = static_cast<uint32>(FCString::Atoi64(*stringId));
 
-		bool changed = false;
+	//	bool changed = false;
 
-		if (trigger->ShortID != valueId)
-		{
-			trigger->ShortID = valueId;
-			changed = true;
-		}
+	//	if (trigger->ShortID != valueId)
+	//	{
+	//		trigger->ShortID = valueId;
+	//		changed = true;
+	//	}
 
-		if (changed)
-		{
-			markAssetDirty(trigger);
-		}
-	}
+	//	if (changed)
+	//	{
+	//		markAssetDirty(trigger);
+	//	}
+	//}
 }
 
 bool AkSoundDataBuilder::parseMedia(const TSharedPtr<FJsonObject>& soundBankJson, MediaToCookMap& mediaToCookMap, TArray<TSoftObjectPtr<UAkMediaAsset>>& mediaList, const FString& platform, bool isInitBank)
 {
-	if (!AkUnrealHelper::IsUsingEventBased())
-	{
-		return false;
-	}
+	//if (!AkUnrealHelper::IsUsingEventBased())
+	//{
+	//	return false;
+	//}
 
-	bool changed = false;
+	//bool changed = false;
 
-	const TArray<TSharedPtr<FJsonValue>>* streamedFiles = nullptr;
-	if (soundBankJson->TryGetArrayField("ReferencedStreamedFiles", streamedFiles))
-	{
-		for (auto& streamJsonValue : *streamedFiles)
-		{
-			changed |= processMediaEntry(mediaToCookMap, platform, mediaList, streamJsonValue->AsObject(), true, isInitBank);
-		}
-	}
+	//const TArray<TSharedPtr<FJsonValue>>* streamedFiles = nullptr;
+	//if (soundBankJson->TryGetArrayField("ReferencedStreamedFiles", streamedFiles))
+	//{
+	//	for (auto& streamJsonValue : *streamedFiles)
+	//	{
+	//		changed |= processMediaEntry(mediaToCookMap, platform, mediaList, streamJsonValue->AsObject(), true, isInitBank);
+	//	}
+	//}
 
-	const TArray<TSharedPtr<FJsonValue>>* excludedMemoryFiles = nullptr;
-	if (soundBankJson->TryGetArrayField("ExcludedMemoryFiles", excludedMemoryFiles))
-	{
-		for (auto& mediaJsonValue : *excludedMemoryFiles)
-		{
-			changed |= processMediaEntry(mediaToCookMap, platform, mediaList, mediaJsonValue->AsObject(), false, isInitBank);
-		}
-	}
+	//const TArray<TSharedPtr<FJsonValue>>* excludedMemoryFiles = nullptr;
+	//if (soundBankJson->TryGetArrayField("ExcludedMemoryFiles", excludedMemoryFiles))
+	//{
+	//	for (auto& mediaJsonValue : *excludedMemoryFiles)
+	//	{
+	//		changed |= processMediaEntry(mediaToCookMap, platform, mediaList, mediaJsonValue->AsObject(), false, isInitBank);
+	//	}
+	//}
 
-	return changed;
+	//return changed;
+	return false;
 }
 
 bool AkSoundDataBuilder::MediaListsAreDifferent(const TArray<TSoftObjectPtr<UAkMediaAsset>>& OldList, const TArray<TSoftObjectPtr<UAkMediaAsset>>& NewList)
@@ -596,62 +598,62 @@ bool AkSoundDataBuilder::DidSwitchContainerDataChange(const TArray<UAkAssetDataS
 bool AkSoundDataBuilder::ParseMediaAndSwitchContainers(TSharedPtr<FJsonObject> eventJson, UAkAssetDataSwitchContainer* AssetData, const FString& platform, MediaToCookMap& mediaToCookMap)
 {
 	bool changed = false;
-	TArray<TSoftObjectPtr<UAkMediaAsset>> NewMediaList;
+	//TArray<TSoftObjectPtr<UAkMediaAsset>> NewMediaList;
 
-	parseMedia(eventJson, mediaToCookMap, NewMediaList, platform, false);
+	//parseMedia(eventJson, mediaToCookMap, NewMediaList, platform, false);
 
-	if (splitSwitchContainerMedia)
-	{
-		TArray<UAkAssetDataSwitchContainerData*> NewSwitchContainerData;
-		const TArray<TSharedPtr<FJsonValue>>* switchContainers = nullptr;
-		if (eventJson->TryGetArrayField("SwitchContainers", switchContainers))
-		{
-			for (auto& switchContainerValueJson : *switchContainers)
-			{
-				auto& switchContainerJson = switchContainerValueJson->AsObject();
+	//if (splitSwitchContainerMedia)
+	//{
+	//	TArray<UAkAssetDataSwitchContainerData*> NewSwitchContainerData;
+	//	const TArray<TSharedPtr<FJsonValue>>* switchContainers = nullptr;
+	//	if (eventJson->TryGetArrayField("SwitchContainers", switchContainers))
+	//	{
+	//		for (auto& switchContainerValueJson : *switchContainers)
+	//		{
+	//			auto& switchContainerJson = switchContainerValueJson->AsObject();
 
-				UAkAssetDataSwitchContainerData* switchContainerEntry = NewObject<UAkAssetDataSwitchContainerData>(AssetData);
-				parseSwitchContainer(switchContainerJson, switchContainerEntry, NewMediaList, AssetData);
-				NewSwitchContainerData.Add(switchContainerEntry);
-			}
-		}
+	//			UAkAssetDataSwitchContainerData* switchContainerEntry = NewObject<UAkAssetDataSwitchContainerData>(AssetData);
+	//			parseSwitchContainer(switchContainerJson, switchContainerEntry, NewMediaList, AssetData);
+	//			NewSwitchContainerData.Add(switchContainerEntry);
+	//		}
+	//	}
 
-		if (DidSwitchContainerDataChange(AssetData->SwitchContainers, NewSwitchContainerData))
-		{
-			AssetData->SwitchContainers.Empty();
-			AssetData->SwitchContainers.Append(NewSwitchContainerData);
-			changed = true;
-		}
-	}
+	//	if (DidSwitchContainerDataChange(AssetData->SwitchContainers, NewSwitchContainerData))
+	//	{
+	//		AssetData->SwitchContainers.Empty();
+	//		AssetData->SwitchContainers.Append(NewSwitchContainerData);
+	//		changed = true;
+	//	}
+	//}
 
-	UAkGroupValue* newDefaultSwitchValue = nullptr;
+	//UAkGroupValue* newDefaultSwitchValue = nullptr;
 
-	FString stringDefaultSwitchValue;
-	if (eventJson->TryGetStringField("DefaultSwitchValue", stringDefaultSwitchValue))
-	{
-		FGuid defaultSwitchValueID;
-		FGuid::ParseExact(stringDefaultSwitchValue, EGuidFormats::DigitsWithHyphensInBraces, defaultSwitchValueID);
+	//FString stringDefaultSwitchValue;
+	//if (eventJson->TryGetStringField("DefaultSwitchValue", stringDefaultSwitchValue))
+	//{
+	//	FGuid defaultSwitchValueID;
+	//	FGuid::ParseExact(stringDefaultSwitchValue, EGuidFormats::DigitsWithHyphensInBraces, defaultSwitchValueID);
 
-		if (auto foundDefaultSwitchValue = AkAssetDatabase::Get().GroupValueMap.Find(defaultSwitchValueID))
-		{
-			newDefaultSwitchValue = *foundDefaultSwitchValue;
-		}
-	}
+	//	if (auto foundDefaultSwitchValue = AkAssetDatabase::Get().GroupValueMap.Find(defaultSwitchValueID))
+	//	{
+	//		newDefaultSwitchValue = *foundDefaultSwitchValue;
+	//	}
+	//}
 
-	if ((!AssetData->DefaultGroupValue && newDefaultSwitchValue)
-		|| (AssetData->DefaultGroupValue && newDefaultSwitchValue && AssetData->DefaultGroupValue->ID != newDefaultSwitchValue->ID)
-		)
-	{
-		AssetData->DefaultGroupValue = newDefaultSwitchValue;
-		changed = true;
-	}
+	//if ((!AssetData->DefaultGroupValue && newDefaultSwitchValue)
+	//	|| (AssetData->DefaultGroupValue && newDefaultSwitchValue && AssetData->DefaultGroupValue->ID != newDefaultSwitchValue->ID)
+	//	)
+	//{
+	//	AssetData->DefaultGroupValue = newDefaultSwitchValue;
+	//	changed = true;
+	//}
 
-	if (MediaListsAreDifferent(AssetData->MediaList, NewMediaList))
-	{
-		AssetData->MediaList.Empty();
-		AssetData->MediaList.Append(NewMediaList);
-		changed = true;
-	}
+	//if (MediaListsAreDifferent(AssetData->MediaList, NewMediaList))
+	//{
+	//	AssetData->MediaList.Empty();
+	//	AssetData->MediaList.Append(NewMediaList);
+	//	changed = true;
+	//}
 
 	return changed;
 }
@@ -661,24 +663,24 @@ bool AkSoundDataBuilder::ParseEventMetadataSection(TSharedPtr<FJsonObject> event
 {
 	bool changed = false;
 
-	const TArray<TSharedPtr<FJsonValue>>* Actions = nullptr;
-	if (eventJson->TryGetArrayField(SectionName, Actions))
-	{
-		for (auto& ValueJson : *Actions)
-		{
-			auto& JsonObject = ValueJson->AsObject();
-			FGuid AssetGuid;
-			FString AssetGuidString = JsonObject->GetStringField("GUID");
-			FGuid::ParseExact(AssetGuidString, EGuidFormats::DigitsWithHyphensInBraces, AssetGuid);
+	//const TArray<TSharedPtr<FJsonValue>>* Actions = nullptr;
+	//if (eventJson->TryGetArrayField(SectionName, Actions))
+	//{
+	//	for (auto& ValueJson : *Actions)
+	//	{
+	//		auto& JsonObject = ValueJson->AsObject();
+	//		FGuid AssetGuid;
+	//		FString AssetGuidString = JsonObject->GetStringField("GUID");
+	//		FGuid::ParseExact(AssetGuidString, EGuidFormats::DigitsWithHyphensInBraces, AssetGuid);
 
-			if (auto assetIt = AssetMap->Find(AssetGuid))
-			{
-				bool WasAlreadyThere = false;
-				DestinationSet->Add(*assetIt, &WasAlreadyThere);
-				changed |= !WasAlreadyThere;
-			}
-		}
-	}
+	//		if (auto assetIt = AssetMap->Find(AssetGuid))
+	//		{
+	//			bool WasAlreadyThere = false;
+	//			DestinationSet->Add(*assetIt, &WasAlreadyThere);
+	//			changed |= !WasAlreadyThere;
+	//		}
+	//	}
+	//}
 
 	return changed;
 }
@@ -706,9 +708,9 @@ bool AkSoundDataBuilder::parseAssetInfo(UAkAudioEvent* akEvent, UAkAssetData* pl
 					changed |= ParseMediaAndSwitchContainers(eventJson, eventPlatformData, platform, mediaToCookMap);
 					changed |= ParseEventMetadataSection(eventJson, FString(TEXT("ActionPostEvent")),	&AkAssetDatabase::Get().EventMap,		&eventPlatformData->PostedEvents);
 					changed |= ParseEventMetadataSection(eventJson, FString(TEXT("AuxBusSends")),		&AkAssetDatabase::Get().AuxBusMap,		&eventPlatformData->UserDefinedSends);
-					changed |= ParseEventMetadataSection(eventJson, FString(TEXT("ActionTrigger")),		&AkAssetDatabase::Get().TriggerMap,		&eventPlatformData->PostedTriggers);
-					changed |= ParseEventMetadataSection(eventJson, FString(TEXT("ActionSetSwitch")),	&AkAssetDatabase::Get().GroupValueMap,	&eventPlatformData->GroupValues);
-					changed |= ParseEventMetadataSection(eventJson, FString(TEXT("ActionSetState")),	&AkAssetDatabase::Get().GroupValueMap,	&eventPlatformData->GroupValues);
+					//changed |= ParseEventMetadataSection(eventJson, FString(TEXT("ActionTrigger")),		&AkAssetDatabase::Get().TriggerMap,		&eventPlatformData->PostedTriggers);
+					//changed |= ParseEventMetadataSection(eventJson, FString(TEXT("ActionSetSwitch")),	&AkAssetDatabase::Get().GroupValueMap,	&eventPlatformData->GroupValues);
+					//changed |= ParseEventMetadataSection(eventJson, FString(TEXT("ActionSetState")),	&AkAssetDatabase::Get().GroupValueMap,	&eventPlatformData->GroupValues);
 					break;
 				}
 			}
@@ -789,101 +791,101 @@ bool AkSoundDataBuilder::parseEventInfo(UAkAudioEvent* akEvent, UAkAudioEventDat
 
 void AkSoundDataBuilder::parseSwitchContainer(const TSharedPtr<FJsonObject>& switchContainerJson, UAkAssetDataSwitchContainerData* switchContainerEntry, TArray<TSoftObjectPtr<UAkMediaAsset>>& mediaList, UObject* parent)
 {
-	FString stringSwitchValue = switchContainerJson->GetStringField("SwitchValue");
-	FGuid switchValueGuid;
-	FGuid::ParseExact(stringSwitchValue, EGuidFormats::DigitsWithHyphensInBraces, switchValueGuid);
+	//FString stringSwitchValue = switchContainerJson->GetStringField("SwitchValue");
+	//FGuid switchValueGuid;
+	//FGuid::ParseExact(stringSwitchValue, EGuidFormats::DigitsWithHyphensInBraces, switchValueGuid);
 
-	if (auto groupValueIt = AkAssetDatabase::Get().GroupValueMap.Find(switchValueGuid))
-	{
-		switchContainerEntry->GroupValue = *groupValueIt;
-	}
+	//if (auto groupValueIt = AkAssetDatabase::Get().GroupValueMap.Find(switchValueGuid))
+	//{
+	//	switchContainerEntry->GroupValue = *groupValueIt;
+	//}
 
-	FString stringDefaultSwitchValue;
-	if (switchContainerJson->TryGetStringField("DefaultSwitchValue", stringDefaultSwitchValue))
-	{
-		FGuid defaultSwitchValue;
-		FGuid::ParseExact(stringDefaultSwitchValue, EGuidFormats::DigitsWithHyphensInBraces, defaultSwitchValue);
+	//FString stringDefaultSwitchValue;
+	//if (switchContainerJson->TryGetStringField("DefaultSwitchValue", stringDefaultSwitchValue))
+	//{
+	//	FGuid defaultSwitchValue;
+	//	FGuid::ParseExact(stringDefaultSwitchValue, EGuidFormats::DigitsWithHyphensInBraces, defaultSwitchValue);
 
-		if (auto defaultGroupValueIt = AkAssetDatabase::Get().GroupValueMap.Find(defaultSwitchValue))
-		{
-			switchContainerEntry->DefaultGroupValue = *defaultGroupValueIt;
-		}
-	}
+	//	if (auto defaultGroupValueIt = AkAssetDatabase::Get().GroupValueMap.Find(defaultSwitchValue))
+	//	{
+	//		switchContainerEntry->DefaultGroupValue = *defaultGroupValueIt;
+	//	}
+	//}
 
-	const TArray<TSharedPtr<FJsonValue>>* jsonMediaList = nullptr;
-	if (switchContainerJson->TryGetArrayField("Media", jsonMediaList))
-	{
-		for (auto& mediaJsonValue : *jsonMediaList)
-		{
-			auto& mediaJsonObject = mediaJsonValue->AsObject();
+	//const TArray<TSharedPtr<FJsonValue>>* jsonMediaList = nullptr;
+	//if (switchContainerJson->TryGetArrayField("Media", jsonMediaList))
+	//{
+	//	for (auto& mediaJsonValue : *jsonMediaList)
+	//	{
+	//		auto& mediaJsonObject = mediaJsonValue->AsObject();
 
-			FString stringId = mediaJsonObject->GetStringField("Id");
-			uint32 mediaFileId = static_cast<uint32>(FCString::Atoi64(*stringId));
+	//		FString stringId = mediaJsonObject->GetStringField("Id");
+	//		uint32 mediaFileId = static_cast<uint32>(FCString::Atoi64(*stringId));
 
-			FSoftObjectPath* mediaAssetPath = nullptr;
+	//		FSoftObjectPath* mediaAssetPath = nullptr;
 
-			{
-				FScopeLock autoLock(&mediaLock);
-				mediaAssetPath = mediaIdToAssetPath.Find(mediaFileId);
-			}
+	//		{
+	//			FScopeLock autoLock(&mediaLock);
+	//			mediaAssetPath = mediaIdToAssetPath.Find(mediaFileId);
+	//		}
 
-			if (mediaAssetPath)
-			{
-				switchContainerEntry->MediaList.Emplace(*mediaAssetPath);
+	//		if (mediaAssetPath)
+	//		{
+	//			switchContainerEntry->MediaList.Emplace(*mediaAssetPath);
 
-				mediaList.RemoveAll([mediaAssetPath](const TSoftObjectPtr<UAkMediaAsset>& item) {
-					return item.GetUniqueID() == *mediaAssetPath;
-				});
-			}
-		}
-	}
+	//			mediaList.RemoveAll([mediaAssetPath](const TSoftObjectPtr<UAkMediaAsset>& item) {
+	//				return item.GetUniqueID() == *mediaAssetPath;
+	//			});
+	//		}
+	//	}
+	//}
 
-	const TArray<TSharedPtr<FJsonValue>>* children = nullptr;
-	if (switchContainerJson->TryGetArrayField("Children", children))
-	{
-		for (auto& childJsonValue : *children)
-		{
-			auto& childJsonObject = childJsonValue->AsObject();
+	//const TArray<TSharedPtr<FJsonValue>>* children = nullptr;
+	//if (switchContainerJson->TryGetArrayField("Children", children))
+	//{
+	//	for (auto& childJsonValue : *children)
+	//	{
+	//		auto& childJsonObject = childJsonValue->AsObject();
 
-			UAkAssetDataSwitchContainerData* childEntry = NewObject<UAkAssetDataSwitchContainerData>(parent);
-			parseSwitchContainer(childJsonObject, childEntry, mediaList, parent);
-			switchContainerEntry->Children.Add(childEntry);
-		}
-	}
+	//		UAkAssetDataSwitchContainerData* childEntry = NewObject<UAkAssetDataSwitchContainerData>(parent);
+	//		parseSwitchContainer(childJsonObject, childEntry, mediaList, parent);
+	//		switchContainerEntry->Children.Add(childEntry);
+	//	}
+	//}
 }
 
 bool AkSoundDataBuilder::parseAssetInfo(UAkAuxBus* akAuxBus, UAkAssetData* auxBusPlatformData, const FString& platform, const FString& language, const TSharedPtr<FJsonObject>& soundBankData, MediaToCookMap& mediaToCookMap)
 {
 	bool changed = false;
 
-	const TArray<TSharedPtr<FJsonValue>>* auxBusses = nullptr;
-	if (soundBankData->TryGetArrayField("IncludedAuxBusses", auxBusses))
-	{
-		for (auto& auxBusJsonValue : *auxBusses)
-		{
-			auto& auxBusJson = auxBusJsonValue->AsObject();
-			FString auxBusStringId = auxBusJson->GetStringField("GUID");
+	//const TArray<TSharedPtr<FJsonValue>>* auxBusses = nullptr;
+	//if (soundBankData->TryGetArrayField("IncludedAuxBusses", auxBusses))
+	//{
+	//	for (auto& auxBusJsonValue : *auxBusses)
+	//	{
+	//		auto& auxBusJson = auxBusJsonValue->AsObject();
+	//		FString auxBusStringId = auxBusJson->GetStringField("GUID");
 
-			FGuid auxBusId;
-			FGuid::ParseExact(auxBusStringId, EGuidFormats::DigitsWithHyphensInBraces, auxBusId);
+	//		FGuid auxBusId;
+	//		FGuid::ParseExact(auxBusStringId, EGuidFormats::DigitsWithHyphensInBraces, auxBusId);
 
-			if (auxBusId == akAuxBus->ID)
-			{
-				FString stringId;
-				if (auxBusJson->TryGetStringField("Id", stringId))
-				{
-					uint32 id = static_cast<uint32>(FCString::Atoi64(*stringId));
-					if (akAuxBus->ShortID != id)
-					{
-						akAuxBus->ShortID = id;
-						changed = true;
-					}
-				}
+	//		if (auxBusId == akAuxBus->ID)
+	//		{
+	//			FString stringId;
+	//			if (auxBusJson->TryGetStringField("Id", stringId))
+	//			{
+	//				uint32 id = static_cast<uint32>(FCString::Atoi64(*stringId));
+	//				if (akAuxBus->ShortID != id)
+	//				{
+	//					akAuxBus->ShortID = id;
+	//					changed = true;
+	//				}
+	//			}
 
-				break;
-			}
-		}
-	}
+	//			break;
+	//		}
+	//	}
+	//}
 
 	return changed;
 }
@@ -951,98 +953,98 @@ bool AkSoundDataBuilder::parseAssetInfo(UAkInitBank* akInitBank, UAkAssetData* p
 
 bool AkSoundDataBuilder::parseAssetInfo(UAkAudioBank* akAudioBank, UAkAssetData* platformData, const FString& platform, const FString& language, const TSharedPtr<FJsonObject>& soundBankData, MediaToCookMap& mediaToCookMap)
 {
-	auto& akAssetDatabase = AkAssetDatabase::Get();
+	//auto& akAssetDatabase = AkAssetDatabase::Get();
 
-	const TArray<TSharedPtr<FJsonValue>>* eventsArray = nullptr;
-	if (soundBankData->TryGetArrayField("IncludedEvents", eventsArray))
-	{
-		bool isUsingNewAssetManagement = AkUnrealHelper::IsUsingEventBased();
+	//const TArray<TSharedPtr<FJsonValue>>* eventsArray = nullptr;
+	//if (soundBankData->TryGetArrayField("IncludedEvents", eventsArray))
+	//{
+	//	bool isUsingNewAssetManagement = AkUnrealHelper::IsUsingEventBased();
 
-		for (auto& eventJsonValue : *eventsArray)
-		{
-			auto& eventJson = eventJsonValue->AsObject();
+	//	for (auto& eventJsonValue : *eventsArray)
+	//	{
+	//		auto& eventJson = eventJsonValue->AsObject();
 
-			FString eventStringId;
-			FGuid eventId;
-			if (eventJson->TryGetStringField("GUID", eventStringId) && !eventStringId.IsEmpty())
-			{ 
-				FGuid::ParseExact(eventStringId, EGuidFormats::DigitsWithHyphensInBraces, eventId);
-			}
+	//		FString eventStringId;
+	//		FGuid eventId;
+	//		if (eventJson->TryGetStringField("GUID", eventStringId) && !eventStringId.IsEmpty())
+	//		{ 
+	//			FGuid::ParseExact(eventStringId, EGuidFormats::DigitsWithHyphensInBraces, eventId);
+	//		}
 
-			UAkAudioEvent* eventByName = nullptr;
-			UAkAudioEvent* const* eventIt = nullptr;
+	//		UAkAudioEvent* eventByName = nullptr;
+	//		UAkAudioEvent* const* eventIt = nullptr;
 
-			eventIt = akAssetDatabase.EventMap.Find(eventId);
-			if (!eventIt)
-			{
-				auto foundEvents = akAssetDatabase.EventMap.FindByName(eventJson->GetStringField("Name"));
-				if (foundEvents.Num() > 0)
-				{
-					eventByName = foundEvents[0];
-					eventIt = &eventByName;
-				}
-			}
+	//		eventIt = akAssetDatabase.EventMap.Find(eventId);
+	//		if (!eventIt)
+	//		{
+	//			auto foundEvents = akAssetDatabase.EventMap.FindByName(eventJson->GetStringField("Name"));
+	//			if (foundEvents.Num() > 0)
+	//			{
+	//				eventByName = foundEvents[0];
+	//				eventIt = &eventByName;
+	//			}
+	//		}
 
-			if (eventIt)
-			{
-				auto sharedThis = SharedThis(this);
+	//		if (eventIt)
+	//		{
+	//			auto sharedThis = SharedThis(this);
 
-				struct EventRequiredData
-				{
-					UAkAudioEvent* akAudioEvent = nullptr;
-					UAkAssetData* eventPlatformData = nullptr;
-				};
+	//			struct EventRequiredData
+	//			{
+	//				UAkAudioEvent* akAudioEvent = nullptr;
+	//				UAkAssetData* eventPlatformData = nullptr;
+	//			};
 
-				TSharedPtr<EventRequiredData> requiredData = MakeShared<EventRequiredData>();
-				requiredData->akAudioEvent = *eventIt;
+	//			TSharedPtr<EventRequiredData> requiredData = MakeShared<EventRequiredData>();
+	//			requiredData->akAudioEvent = *eventIt;
 
-				auto fetchPlatformDataTask = FFunctionGraphTask::CreateAndDispatchWhenReady([requiredData, platform]()
-				{
-					if (requiredData->akAudioEvent)
-					{
-						requiredData->eventPlatformData = requiredData->akAudioEvent->FindOrAddAssetData(platform, FString());
-					}
-				}, GET_STATID(STAT_EventPlatformDataEventGroup), nullptr, ENamedThreads::GameThread);
+	//			auto fetchPlatformDataTask = FFunctionGraphTask::CreateAndDispatchWhenReady([requiredData, platform]()
+	//			{
+	//				if (requiredData->akAudioEvent)
+	//				{
+	//					requiredData->eventPlatformData = requiredData->akAudioEvent->FindOrAddAssetData(platform, FString());
+	//				}
+	//			}, GET_STATID(STAT_EventPlatformDataEventGroup), nullptr, ENamedThreads::GameThread);
 
-				FFunctionGraphTask::CreateAndDispatchWhenReady([sharedThis, requiredData, eventJson, platform, language, isUsingNewAssetManagement]
-				{
-					if (!requiredData->akAudioEvent || !requiredData->eventPlatformData)
-						return;
+	//			FFunctionGraphTask::CreateAndDispatchWhenReady([sharedThis, requiredData, eventJson, platform, language, isUsingNewAssetManagement]
+	//			{
+	//				if (!requiredData->akAudioEvent || !requiredData->eventPlatformData)
+	//					return;
 
-					bool changed = false;
+	//				bool changed = false;
 
-					MediaToCookMap& mediaToCookMap = sharedThis->getMediaToCookMap(platform);
-					changed |= sharedThis->parseEventInfo(requiredData->akAudioEvent, Cast<UAkAudioEventData>(requiredData->eventPlatformData), eventJson);
+	//				MediaToCookMap& mediaToCookMap = sharedThis->getMediaToCookMap(platform);
+	//				changed |= sharedThis->parseEventInfo(requiredData->akAudioEvent, Cast<UAkAudioEventData>(requiredData->eventPlatformData), eventJson);
 
-					if (!isUsingNewAssetManagement)
-					{
-						return;
-					}
+	//				if (!isUsingNewAssetManagement)
+	//				{
+	//					return;
+	//				}
 
-					if (auto* eventPlatformData = Cast<UAkAudioEventData>(requiredData->eventPlatformData))
-					{
-						if (language.Len() > 0)
-						{
-							auto localizedMediaInfo = eventPlatformData->FindOrAddLocalizedData(language);
-							changed |= sharedThis->ParseMediaAndSwitchContainers(eventJson, localizedMediaInfo, platform, mediaToCookMap);
-						}
-						else
-						{
-							changed |= sharedThis->ParseMediaAndSwitchContainers(eventJson, eventPlatformData, platform, mediaToCookMap);
-						}
-					}
+	//				if (auto* eventPlatformData = Cast<UAkAudioEventData>(requiredData->eventPlatformData))
+	//				{
+	//					if (language.Len() > 0)
+	//					{
+	//						auto localizedMediaInfo = eventPlatformData->FindOrAddLocalizedData(language);
+	//						changed |= sharedThis->ParseMediaAndSwitchContainers(eventJson, localizedMediaInfo, platform, mediaToCookMap);
+	//					}
+	//					else
+	//					{
+	//						changed |= sharedThis->ParseMediaAndSwitchContainers(eventJson, eventPlatformData, platform, mediaToCookMap);
+	//					}
+	//				}
 
-					if (changed)
-					{
-						sharedThis->markAssetDirty(requiredData->akAudioEvent);
-						sharedThis->markAssetDirty(requiredData->eventPlatformData);
-					}
-				}, GET_STATID(STAT_ParseEventInfoEventGroup), fetchPlatformDataTask);
-			}
-		}
-	}
+	//				if (changed)
+	//				{
+	//					sharedThis->markAssetDirty(requiredData->akAudioEvent);
+	//					sharedThis->markAssetDirty(requiredData->eventPlatformData);
+	//				}
+	//			}, GET_STATID(STAT_ParseEventInfoEventGroup), fetchPlatformDataTask);
+	//		}
+	//	}
+	//}
 
-	GetAuxBusFromBankInfo(soundBankData);
+	//GetAuxBusFromBankInfo(soundBankData);
 
 	return false;
 }
@@ -1274,79 +1276,79 @@ FString AkSoundDataBuilder::fillAudioBankInfoMap(AudioBankInfoMap& AudioBankInfo
 	auto& akAssetDatabase = AkAssetDatabase::Get();
 	TSet<FString> BanksToGenerate;
 
-	{
-		FScopeLock autoLock(&akAssetDatabase.EventMap.CriticalSection);
+	//{
+	//	FScopeLock autoLock(&akAssetDatabase.EventMap.CriticalSection);
 
-		for (auto& eventEntry : akAssetDatabase.EventMap.TypeMap)
-		{
-			if (eventEntry.Value->RequiredBank)
-			{
-				if (!initParameters.SkipLanguages || (initParameters.SkipLanguages && eventEntry.Value->RequiredBank->LocalizedPlatformAssetDataMap.Num() == 0))
-				{
-					FString audioBankName;
-					if (AkToolBehavior::Get()->AkSoundDataBuilder_GetBankName(this, eventEntry.Value->RequiredBank, initParameters.BanksToGenerate, audioBankName))
-					{
-						BanksToGenerate.Add(audioBankName);
-					}
+	//	for (auto& eventEntry : akAssetDatabase.EventMap.TypeMap)
+	//	{
+	//		if (eventEntry.Value->RequiredBank)
+	//		{
+	//			if (!initParameters.SkipLanguages || (initParameters.SkipLanguages && eventEntry.Value->RequiredBank->LocalizedPlatformAssetDataMap.Num() == 0))
+	//			{
+	//				FString audioBankName;
+	//				if (AkToolBehavior::Get()->AkSoundDataBuilder_GetBankName(this, eventEntry.Value->RequiredBank, initParameters.BanksToGenerate, audioBankName))
+	//				{
+	//					BanksToGenerate.Add(audioBankName);
+	//				}
 
-					if (initParameters.BanksToGenerate.Num() == 0 || initParameters.BanksToGenerate.Contains(audioBankName))
-					{
-						auto& infoEntry = AudioBankInfoMap.FindOrAdd(audioBankName);
-						infoEntry.NeedsRebuild = infoEntry.NeedsRebuild || eventEntry.Value->NeedsRebuild(PlatformsToBuild, LanguagesToBuild, SoundBankInfoCache);
+	//				if (initParameters.BanksToGenerate.Num() == 0 || initParameters.BanksToGenerate.Contains(audioBankName))
+	//				{
+	//					auto& infoEntry = AudioBankInfoMap.FindOrAdd(audioBankName);
+	//					infoEntry.NeedsRebuild = infoEntry.NeedsRebuild || eventEntry.Value->NeedsRebuild(PlatformsToBuild, LanguagesToBuild, SoundBankInfoCache);
 
-						auto& eventSet = infoEntry.Events;
-						switch (InfoKind)
-						{
-						case FillAudioBankInfoKind::GUID:
-							eventSet.Add(eventEntry.Value->ID.ToString(EGuidFormats::DigitsWithHyphensInBraces));
-							break;
-						case FillAudioBankInfoKind::AssetName:
-							eventSet.Add(eventEntry.Value->GetName());
-							break;
-						default:
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
+	//					auto& eventSet = infoEntry.Events;
+	//					switch (InfoKind)
+	//					{
+	//					case FillAudioBankInfoKind::GUID:
+	//						eventSet.Add(eventEntry.Value->ID.ToString(EGuidFormats::DigitsWithHyphensInBraces));
+	//						break;
+	//					case FillAudioBankInfoKind::AssetName:
+	//						eventSet.Add(eventEntry.Value->GetName());
+	//						break;
+	//					default:
+	//						break;
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 
-	{
-		FScopeLock autoLock(&akAssetDatabase.AuxBusMap.CriticalSection);
+	//{
+	//	FScopeLock autoLock(&akAssetDatabase.AuxBusMap.CriticalSection);
 
-		for (auto& auxBusEntry : akAssetDatabase.AuxBusMap.TypeMap)
-		{
-			if (auxBusEntry.Value->RequiredBank)
-			{
-				FString audioBankName;
+	//	for (auto& auxBusEntry : akAssetDatabase.AuxBusMap.TypeMap)
+	//	{
+	//		if (auxBusEntry.Value->RequiredBank)
+	//		{
+	//			FString audioBankName;
 
-				if (!AkToolBehavior::Get()->AkSoundDataBuilder_GetBankName(this, auxBusEntry.Value->RequiredBank, initParameters.BanksToGenerate, audioBankName))
-				{
-					BanksToGenerate.Add(audioBankName);
-				}
+	//			if (!AkToolBehavior::Get()->AkSoundDataBuilder_GetBankName(this, auxBusEntry.Value->RequiredBank, initParameters.BanksToGenerate, audioBankName))
+	//			{
+	//				BanksToGenerate.Add(audioBankName);
+	//			}
 
-				if (initParameters.BanksToGenerate.Num() == 0 || initParameters.BanksToGenerate.Contains(audioBankName))
-				{
-					auto& infoEntry = AudioBankInfoMap.FindOrAdd(audioBankName);
-					infoEntry.NeedsRebuild = infoEntry.NeedsRebuild || auxBusEntry.Value->NeedsRebuild(PlatformsToBuild, LanguagesToBuild, SoundBankInfoCache);
+	//			if (initParameters.BanksToGenerate.Num() == 0 || initParameters.BanksToGenerate.Contains(audioBankName))
+	//			{
+	//				auto& infoEntry = AudioBankInfoMap.FindOrAdd(audioBankName);
+	//				infoEntry.NeedsRebuild = infoEntry.NeedsRebuild || auxBusEntry.Value->NeedsRebuild(PlatformsToBuild, LanguagesToBuild, SoundBankInfoCache);
 
-					auto& auxBusSet = infoEntry.AuxBusses;
-					switch (InfoKind)
-					{
-					case FillAudioBankInfoKind::GUID:
-						auxBusSet.Add(auxBusEntry.Value->ID.ToString(EGuidFormats::DigitsWithHyphensInBraces));
-						break;
-					case FillAudioBankInfoKind::AssetName:
-						auxBusSet.Add(auxBusEntry.Value->GetName());
-						break;
-					default:
-						break;
-					}
-				}
-			}
-		}
-	}
+	//				auto& auxBusSet = infoEntry.AuxBusses;
+	//				switch (InfoKind)
+	//				{
+	//				case FillAudioBankInfoKind::GUID:
+	//					auxBusSet.Add(auxBusEntry.Value->ID.ToString(EGuidFormats::DigitsWithHyphensInBraces));
+	//					break;
+	//				case FillAudioBankInfoKind::AssetName:
+	//					auxBusSet.Add(auxBusEntry.Value->GetName());
+	//					break;
+	//				default:
+	//					break;
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 
 	return FString::Join(BanksToGenerate, TEXT(" "));
 }

@@ -16,6 +16,8 @@ public:
 
 	void EnterEvent(const FGuid& Id, const FString& Name, const FString& RelativePath) override;
 
+	void EnterBank(const FGuid& Id, const FString& Name, const FString& RelativePath) override;
+
 	void EnterAcousticTexture(const FGuid& Id, const FString& Name, const FString& RelativePath) override;
 
 	void EnterAuxBus(const FGuid& Id, const FString& Name, const FString& RelativePath) override;
@@ -33,6 +35,8 @@ public:
 	void End() override;
 
 	void RegisterError(const FString& xmlFilePath, const FString& errorMessage) override;
+
+	void SetDoSave(bool value) { doSave = false; }
 
 protected:
 	virtual void collectExtraAssetsToDelete(TArray<FAssetData>& assetToDelete) {}
@@ -54,5 +58,6 @@ private:
 	FString currentSwitchGroupName;
 	FGuid currentSwitchGroupId;
 	bool doAssetCleanup = true;
+	bool doSave = true;
 };
 

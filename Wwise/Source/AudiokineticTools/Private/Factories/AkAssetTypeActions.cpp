@@ -85,7 +85,6 @@ void FAssetTypeActions_AkAcousticTexture::OpenAssetEditor(const TArray<UObject*>
 	FSimpleAssetEditor::CreateEditor(EToolkitMode::Standalone, EditWithinLevelEditor, InObjects);
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // FAssetTypeActions_AkAudioBank
 
@@ -179,7 +178,6 @@ void FAssetTypeActions_AkAudioBank::RefreshAllBanks(TArray<TWeakObjectPtr<UAkAud
 	}
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // FAssetTypeActions_AkAudioEvent
 
@@ -213,6 +211,26 @@ void FAssetTypeActions_AkAudioEvent::GetActions(const TArray<UObject*>& InObject
 		FSlateIcon(),
 		FUIAction(
 			FExecuteAction::CreateSP(this, &FAssetTypeActions_AkAudioEvent::GroupIntoSoundBank, Events),
+			FCanExecuteAction()
+		)
+	);
+
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("AkAudioEvent_Sync", "Sync"),
+		LOCTEXT("AkAudioEvent_SyncTooltip", "Sync with wwise project"),
+		FSlateIcon(),
+		FUIAction(
+			FExecuteAction::CreateSP(this, &FAssetTypeActions_AkAudioEvent::Sync, Events),
+			FCanExecuteAction()
+		)
+	);
+
+	MenuBuilder.AddMenuEntry(
+		LOCTEXT("AkAudioEvent_Migrate", "Migrate"),
+		LOCTEXT("AkAudioEvent_MigrateTooltip", "Migrate To New Ak Asset"),
+		FSlateIcon(),
+		FUIAction(
+			FExecuteAction::CreateSP(this, &FAssetTypeActions_AkAudioEvent::Migrate, Events),
 			FCanExecuteAction()
 		)
 	);
@@ -266,7 +284,7 @@ void FAssetTypeActions_AkAudioEvent::PlayEvent(TArray<TWeakObjectPtr<UAkAudioEve
 
 void FAssetTypeActions_AkAudioEvent::StopEvent(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects)
 {
-	FAkAudioDevice * AudioDevice = FAkAudioDevice::Get();
+	FAkAudioDevice* AudioDevice = FAkAudioDevice::Get();
 	if (AudioDevice)
 	{
 		AudioDevice->StopGameObject(nullptr);
@@ -311,6 +329,31 @@ void FAssetTypeActions_AkAudioEvent::GroupIntoSoundBank(TArray<TWeakObjectPtr<UA
 			weakEventPtr->MarkPackageDirty();
 		}
 	}
+}
+
+void FAssetTypeActions_AkAudioEvent::Sync(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects)
+{
+	const UAkSettingsPerUser* AkSettings = GetDefault<UAkSettingsPerUser>();
+	if (!AkSettings->EnableAutomaticAssetSynchronization)
+		return;
+
+	AkAssetDatabase& AssetDataBase = AkAssetDatabase::Get();
+	AkAssetManagementManager* AssetManager = AssetDataBase.GetAssetManagementManager();
+	if (AssetManager)
+		AssetManager->DoAssetSynchronization();
+}
+
+void FAssetTypeActions_AkAudioEvent::Migrate(TArray<TWeakObjectPtr<UAkAudioEvent>> Objects)
+{
+	const UAkSettingsPerUser* AkSettings = GetDefault<UAkSettingsPerUser>();
+	if (AkSettings->EnableAutomaticAssetSynchronization)
+		return;
+
+	AkAssetDatabase& AssetDataBase = AkAssetDatabase::Get();
+	AkAssetManagementManager* AssetManager = AssetDataBase.GetAssetManagementManager();
+
+	if (AssetManager)
+		AssetManager->DoAssetMigration();
 }
 
 //////////////////////////////////////////////////////////////////////////

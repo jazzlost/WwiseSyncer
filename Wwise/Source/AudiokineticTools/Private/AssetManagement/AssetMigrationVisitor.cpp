@@ -4,7 +4,7 @@
 #include "AkAudioEvent.h"
 #include "AkAuxBus.h"
 #include "AkAudioBank.h"
-#include "AkInitBank.h"
+//#include "AkInitBank.h"
 #include "AkSettings.h"
 #include "AkAcousticTexture.h"
 #include "AkUnrealHelper.h"
@@ -12,6 +12,7 @@
 #include "AssetTools/Public/AssetToolsModule.h"
 #include "Misc/ScopedSlowTask.h"
 #include "UnrealEd/Public/ObjectTools.h"
+//#include "FileHelper.h"
 
 #define LOCTEXT_NAMESPACE "AkAudio"
 
@@ -21,107 +22,189 @@ void AssetMigrationVisitor::OnBeginParse()
 
 	TArray<FAssetData> allEvents;
 	TArray<FAssetData> allAuxBus;
-	TArray<FAssetData> allAcousticTexture;
+	//TArray<FAssetData> allAcousticTexture;
 	TArray<FAssetData> allAudioBank;
-	TArray<FAssetData> allInitBank;
+	//TArray<FAssetData> allInitBank;
 
 	auto& AssetRegistry = AssetRegistryModule.Get();
 	AssetRegistry.GetAssetsByClass(UAkAudioEvent::StaticClass()->GetFName(), allEvents);
 	AssetRegistry.GetAssetsByClass(UAkAuxBus::StaticClass()->GetFName(), allAuxBus);
-	AssetRegistry.GetAssetsByClass(UAkAcousticTexture::StaticClass()->GetFName(), allAcousticTexture);
+	//AssetRegistry.GetAssetsByClass(UAkAcousticTexture::StaticClass()->GetFName(), allAcousticTexture);
 	AssetRegistry.GetAssetsByClass(UAkAudioBank::StaticClass()->GetFName(), allAudioBank);
-	AssetRegistry.GetAssetsByClass(UAkInitBank::StaticClass()->GetFName(), allInitBank);
+	//AssetRegistry.GetAssetsByClass(UAkInitBank::StaticClass()->GetFName(), allInitBank);
 
-	FScopedSlowTask SlowTask(static_cast<float>(allEvents.Num() + allAuxBus.Num() + allAcousticTexture.Num()), LOCTEXT("AK_ScanAssets", "Scanning sound data assets..."));
+	FScopedSlowTask SlowTask(static_cast<float>(allEvents.Num() + allAuxBus.Num() + allAudioBank.Num()), LOCTEXT("AK_ScanAssets", "Scanning sound data assets..."));
 	SlowTask.MakeDialog();
 
-	auto processAssetData = [&SlowTask](const FAssetData& assetData, TMap<FString, TArray<UObject*>>& duplicateMap) {
-		FString assetName = assetData.AssetName.ToString();
-		FString Message = FString::Printf(TEXT("Scanning sound data asset: %s"), *assetName);
+	//auto processAssetData = [&SlowTask](const FAssetData& assetData, TMap<FString, TArray<UObject*>>& duplicateMap) {
+	//	FString assetName = assetData.AssetName.ToString();
+	//	FString Message = FString::Printf(TEXT("Scanning sound data asset: %s"), *assetName);
+	//	SlowTask.EnterProgressFrame(1.0f, FText::FromString(Message));
+
+	//	auto* assetInstance = assetData.GetAsset();
+	//	duplicateMap.FindOrAdd(assetName).Add(assetInstance);
+	//};
+	auto ProcessMigrateAssetData = [this, &SlowTask](const FAssetData& AssetData, TMap<FString, TArray<UObject*>>& duplicateMap)
+	{
+		FString AssetName = AssetData.AssetName.ToString();
+		FString Message = FString::Printf(TEXT("Scanning sound data asset: %s"), *AssetName);
 		SlowTask.EnterProgressFrame(1.0f, FText::FromString(Message));
 
-		auto* assetInstance = assetData.GetAsset();
-		duplicateMap.FindOrAdd(assetName).Add(assetInstance);
+		auto* assetInstance = AssetData.GetAsset();
+		duplicateMap.FindOrAdd(AssetName).Add(assetInstance);
 	};
 
 	for (auto& assetData : allEvents)
 	{
-		processAssetData(assetData, duplicatedEvents);
+		//processAssetData(assetData, duplicatedEvents);
+		ProcessMigrateAssetData(assetData, duplicatedEvents);
+		FString AssetName = assetData.AssetName.ToString();
+		MigrateEvents.FindOrAdd(AssetName);
 	}
 
-	for (auto& assetData : allAuxBus)
+	for (auto& assetData : allAudioBank)
 	{
-		processAssetData(assetData, duplicatedAuxBus);
+		//processAssetData(assetData, duplicatedEvents);
+		ProcessMigrateAssetData(assetData, duplicatedBanks);
+		FString AssetName = assetData.AssetName.ToString();
+		MigrateBanks.FindOrAdd(AssetName);
 	}
 
-	for (auto& assetData : allAcousticTexture)
-	{
-		processAssetData(assetData, duplicatedAcousticTextures);
-	}
+	//for (auto& assetData : allAuxBus)
+	//{
+	//	processAssetData(assetData, duplicatedAuxBus);
+	//}
+
+	//for (auto& assetData : allAcousticTexture)
+	//{
+	//	processAssetData(assetData, duplicatedAcousticTextures);
+	//}
 
 	auto& akAssetDatabase = AkAssetDatabase::Get();
 
-	akAssetDatabase.AcousticTextureMap.Empty();
+	//akAssetDatabase.AcousticTextureMap.Empty();
 	akAssetDatabase.AuxBusMap.Empty();
 	akAssetDatabase.BankMap.Empty();
 	akAssetDatabase.EventMap.Empty();
 
-	for (auto& assetData : allAudioBank)
-	{
-		auto audioBank = Cast<UAkAudioBank>(assetData.GetAsset());
-		if (audioBank)
-		{
-			if (!audioBank->ID.IsValid())
-			{
-				audioBank->ID = FGuid::NewGuid();
-				audioBank->MarkPackageDirty();
+	//for (auto& assetData : allAudioBank)
+	//{
+	//	auto audioBank = Cast<UAkAudioBank>(assetData.GetAsset());
+	//	if (audioBank)
+	//	{
+	//		if (!audioBank->ID.IsValid())
+	//		{
+	//			audioBank->ID = FGuid::NewGuid();
+	//			audioBank->MarkPackageDirty();
 
-				packagesToSave.AddUnique(audioBank->GetOutermost());
-			}
+	//			packagesToSave.AddUnique(audioBank->GetOutermost());
+	//		}
 
-			akAssetDatabase.Add(audioBank->ID, audioBank);
-		}
-	}
+	//		akAssetDatabase.Add(audioBank->ID, audioBank);
+	//	}
+	//}
 
-	if (allInitBank.Num() > 0)
-	{
-		auto initBank = Cast<UAkInitBank>(allInitBank[0].GetAsset());
-		initBank->Reset();
-		akAssetDatabase.Add(initBank->ID, initBank);
-	}
+	//if (allInitBank.Num() > 0)
+	//{
+	//	auto initBank = Cast<UAkInitBank>(allInitBank[0].GetAsset());
+	//	initBank->Reset();
+	//	akAssetDatabase.Add(initBank->ID, initBank);
+	//}
 
-	akAssetDatabase.CreateInitBankIfNeeded();
+	//akAssetDatabase.CreateInitBankIfNeeded();
 }
 
 void AssetMigrationVisitor::EnterEvent(const FGuid& Id, const FString& Name, const FString& RelativePath)
 {
-	migrateAssets<UAkAudioEvent>(Id, Name, duplicatedEvents);
+	//migrateAssets<UAkAudioEvent>(Id, Name, duplicatedEvents);
 
-	Super::EnterEvent(Id, Name, RelativePath);
+	//Super::EnterEvent(Id, Name, RelativePath);
+
+	auto& akAssetDatabase = AkAssetDatabase::Get();
+
+	FGuid& IdRef = MigrateEvents.FindOrAdd(Name);
+	IdRef = Id;
 }
 
+void AssetMigrationVisitor::EnterBank(const FGuid& Id, const FString& Name, const FString& RelativePath)
+{
+	auto& akAssetDatabase = AkAssetDatabase::Get();
+
+	FGuid& IdRef = MigrateBanks.FindOrAdd(Name);
+	IdRef = Id;
+}
 void AssetMigrationVisitor::EnterAuxBus(const FGuid& Id, const FString& Name, const FString& RelativePath)
 {
-	migrateAssets<UAkAuxBus>(Id, Name, duplicatedAuxBus);
+	//migrateAssets<UAkAuxBus>(Id, Name, duplicatedAuxBus);
 
-	Super::EnterAuxBus(Id, Name, RelativePath);
+	//Super::EnterAuxBus(Id, Name, RelativePath);
 }
 
 void AssetMigrationVisitor::EnterAcousticTexture(const FGuid& Id, const FString& Name, const FString& RelativePath)
 {
-	migrateAssets<UAkAcousticTexture>(Id, Name, duplicatedAcousticTextures);
+	//migrateAssets<UAkAcousticTexture>(Id, Name, duplicatedAcousticTextures);
 
-	Super::EnterAcousticTexture(Id, Name, RelativePath);
+	//Super::EnterAcousticTexture(Id, Name, RelativePath);
 }
 
 void AssetMigrationVisitor::End()
 {
-	Super::End();
+	//Super::End();
+
+	for (auto MigrateEvent : MigrateEvents)
+	{
+		TArray<UObject*>* EventsPtr = duplicatedEvents.Find(MigrateEvent.Key);
+		if (EventsPtr)
+		{
+			TArray<UObject*> Events = *EventsPtr;
+			if (Events.Num() > 0)
+			{
+				UAkAudioType* Event = static_cast<UAkAudioType*>(Events[0]);
+				Event->ID = MigrateEvent.Value;
+
+				auto package = Event->GetOutermost();
+				if (package)
+				{
+					package->MarkPackageDirty();
+					packagesToSave.AddUnique(package);
+				}
+			}
+		}
+	}
+
+	for (auto MigrateBank : MigrateBanks)
+	{
+		TArray<UObject*>* BanksPtr = duplicatedBanks.Find(MigrateBank.Key);
+
+		if (BanksPtr)
+		{
+			TArray<UObject*> Banks = *BanksPtr;
+			if (Banks.Num() > 0)
+			{
+				UAkAudioType* Bank = static_cast<UAkAudioType*>(Banks[0]);
+				Bank->ID = MigrateBank.Value;
+
+				auto package = Bank->GetOutermost();
+				if (package)
+				{
+					package->MarkPackageDirty();
+					packagesToSave.AddUnique(package);
+				}
+			}
+		}
+	}
 
 	auto* AkSettings = GetDefault<UAkSettings>();
 	if (AkSettings && AkSettings->FixupRedirectorsDuringMigration)
 	{
 		AkAssetDatabase::Get().FixUpRedirectors(AkUnrealHelper::GetBaseAssetPackagePath());
+	}
+
+	if (packagesToSave.Num() > 0)
+	{
+		FScopedSlowTask SlowTask(0.f, LOCTEXT("AK_SaveNewAkAssets", "Saving new sound data assets..."));
+		SlowTask.MakeDialog();
+		UEditorLoadingAndSavingUtils::SavePackages(packagesToSave, false);
 	}
 }
 
@@ -259,7 +342,7 @@ void AssetMigrationVisitor::migrateAssets(const FGuid& Id, const FString& Name, 
 		{
 			akAsset->ID = Id;
 			akAsset->MarkPackageDirty();
-			
+
 			assetDatabase.Add(Id, akAsset);
 		}
 

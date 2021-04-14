@@ -913,13 +913,13 @@ void UAkGameplayStatics::SetCurrentAudioCultureAsync(const FString& AudioCulture
 
 UObject* UAkGameplayStatics::GetAkAudioTypeUserData(const UAkAudioType* Instance, const UClass* Type)
 {
-	for (auto entry : Instance->UserData)
-	{
-		if (entry && entry->GetClass()->IsChildOf(Type))
-		{
-			return entry;
-		}
-	}
+	//for (auto entry : Instance->UserData)
+	//{
+	//	if (entry && entry->GetClass()->IsChildOf(Type))
+	//	{
+	//		return entry;
+	//	}
+	//}
 
 	return nullptr;
 }

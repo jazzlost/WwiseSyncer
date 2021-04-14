@@ -541,7 +541,7 @@ class FAudiokineticToolsModule : public IAudiokineticTools
 			}
 		}
 
-		if (!AkSettings || !CurrentProject || (AkSettings && !AkSettings->UseEventBasedPackaging) || (AkSettingsPerUser && !AkSettingsPerUser->EnableAutomaticAssetSynchronization))
+		if (!AkSettings || !CurrentProject /*|| (AkSettings && !AkSettings->UseEventBasedPackaging)*/ || (AkSettingsPerUser && !AkSettingsPerUser->EnableAutomaticAssetSynchronization))
 		{
 			assetManagementManager.Uninit();
 			doAssetSync = false;
@@ -665,6 +665,17 @@ class FAudiokineticToolsModule : public IAudiokineticTools
 		OnAssetRegistryFilesLoadedHandle = AssetRegistryModule.Get().OnFilesLoaded().AddRaw(this, &FAudiokineticToolsModule::OnAssetRegistryFilesLoaded);
 
 		LateRegistrationOfMatineeToLevelSequencerHandle = AssetRegistryModule.Get().OnFilesLoaded().AddRaw(this, &FAudiokineticToolsModule::LateRegistrationOfMatineeToLevelSequencer);
+
+		UAkSettingsPerUser* AkSettings = GetMutableDefault<UAkSettingsPerUser>();
+
+		if (AkSettings->EnableAutomaticAssetSynchronization)
+		{
+			AkAssetDatabase& AssetDatabase = AkAssetDatabase::Get();
+			bool bInited = AssetDatabase.GetAssetManagementManager()->IsInited();
+			if (!bInited)
+				AssetDatabase.GetAssetManagementManager()->Init();
+			//assetManagementManager = *(AssetDatabase.GetAssetManagementManager());
+		}
 
 		FEditorDelegates::EndPIE.AddRaw(this, &FAudiokineticToolsModule::OnEndPIE);
 

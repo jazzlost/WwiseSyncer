@@ -2,7 +2,7 @@
 
 #include "Async/Async.h"
 #include "AkAudioDevice.h"
-#include "AkGroupValue.h"
+//#include "AkGroupValue.h"
 #include "Core/Public/Modules/ModuleManager.h"
 
 void UAkAudioType::PostLoad()
@@ -28,10 +28,10 @@ void UAkAudioType::Load()
 		{
 			ShortID = idFromName;
 		}
-		else if (!IsA<UAkGroupValue>() && ShortID != 0 && ShortID != idFromName)
-		{
-			UE_LOG(LogAkAudio, Error, TEXT("%s - Current Short ID '%u' is different from ID from the name '%u'"), *GetName(), ShortID, idFromName);
-		}
+		//else if (!IsA<UAkGroupValue>() && ShortID != 0 && ShortID != idFromName)
+		//{
+			//UE_LOG(LogAkAudio, Error, TEXT("%s - Current Short ID '%u' is different from ID from the name '%u'"), *GetName(), ShortID, idFromName);
+		//}
 	}
 }
 

@@ -72,12 +72,12 @@ namespace AkUnrealHelper
 
 	FString GetBaseAssetPackagePath()
 	{
-		if (const UAkSettings* AkSettings = GetDefault<UAkSettings>())
-		{
-			return FPaths::Combine(TEXT("/Game/"), AkSettings->WwiseSoundDataFolder.Path);
-		}
+		//if (const UAkSettings* AkSettings = GetDefault<UAkSettings>())
+		//{
+		//	return FPaths::Combine(TEXT("/Game/"), AkSettings->WwiseSoundDataFolder.Path);
+		//}
 
-		return TEXT("/Game/WwiseAudio");
+		return TEXT("/Game");
 	}
 
 	FString GetLocalizedAssetPackagePath()

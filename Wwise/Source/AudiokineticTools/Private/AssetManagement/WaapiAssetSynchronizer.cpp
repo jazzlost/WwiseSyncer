@@ -1,16 +1,17 @@
 #include "WaapiAssetSynchronizer.h"
 
-#include "AkAcousticTexture.h"
+//#include "AkAcousticTexture.h"
+#include "AkAudioDevice.h"
 #include "AkAssetDatabase.h"
 #include "AkAudioBank.h"
 #include "AkAudioEvent.h"
 #include "AkAudioType.h"
 #include "AkAuxBus.h"
-#include "AkInitBank.h"
-#include "AkRtpc.h"
-#include "AkStateValue.h"
-#include "AkSwitchValue.h"
-#include "AkTrigger.h"
+//#include "AkInitBank.h"
+//#include "AkRtpc.h"
+//#include "AkStateValue.h"
+//#include "AkSwitchValue.h"
+//#include "AkTrigger.h"
 #include "AkWaapiUtils.h"
 #include "AssetRegistry/Public/AssetRegistryModule.h"
 #include "AssetTools/Public/AssetToolsModule.h"
@@ -190,8 +191,8 @@ void WaapiAssetSynchronizer::deleteTick(float DeltaSeconds)
 
 void WaapiAssetSynchronizer::onPreDeleted(uint64_t Id, TSharedPtr<FJsonObject> Response)
 {
-	if (FAkAudioDevice::Get()->IsBuildingData)
-		return;
+	//if (FAkAudioDevice::Get()->IsBuildingData)
+	//	return;
 
 	AsyncTask(ENamedThreads::GameThread, [this, Response]
 	{
@@ -237,8 +238,8 @@ void WaapiAssetSynchronizer::onPreDeleted(uint64_t Id, TSharedPtr<FJsonObject> R
 //		2.	Renamed is called with the correct name. We then create the asset, and remove the GUID from the stack.
 void WaapiAssetSynchronizer::onChildAdded(uint64_t Id, TSharedPtr<FJsonObject> Response)
 {
-	if (FAkAudioDevice::Get()->IsBuildingData)
-		return;
+	//if (FAkAudioDevice::Get()->IsBuildingData)
+	//	return;
 
 	AsyncTask(ENamedThreads::GameThread, [this, Response]
 	{
@@ -286,32 +287,32 @@ void WaapiAssetSynchronizer::onChildAdded(uint64_t Id, TSharedPtr<FJsonObject> R
 
 		FGuid groupId;
 
-		if (assetType == UAkStateValue::StaticClass() || assetType == UAkSwitchValue::StaticClass())
-		{
-			const TSharedPtr<FJsonObject>* parentPtr = nullptr;
-			if (!Response->TryGetObjectField(WwiseWaapiHelper::PARENT, parentPtr) || !parentPtr)
-			{
-				return; // error parsing Json
-			}
-			
-			auto parent = *parentPtr;
+		//if (assetType == UAkStateValue::StaticClass() || assetType == UAkSwitchValue::StaticClass())
+		//{
+		//	const TSharedPtr<FJsonObject>* parentPtr = nullptr;
+		//	if (!Response->TryGetObjectField(WwiseWaapiHelper::PARENT, parentPtr) || !parentPtr)
+		//	{
+		//		return; // error parsing Json
+		//	}
+		//	
+		//	auto parent = *parentPtr;
 
-			FString parentName;
-			if (!parent->TryGetStringField(WwiseWaapiHelper::NAME, parentName))
-			{
-				return;
-			}
+		//	FString parentName;
+		//	if (!parent->TryGetStringField(WwiseWaapiHelper::NAME, parentName))
+		//	{
+		//		return;
+		//	}
 
-			if (parentName.IsEmpty())
-			{
-				parentName = TEXT("NewStateGroup");
-			}
+		//	if (parentName.IsEmpty())
+		//	{
+		//		parentName = TEXT("NewStateGroup");
+		//	}
 
-			assetName = FString::Printf(TEXT("%s-%s"), *parentName, *name);
-			auto stringGroupId = parent->GetStringField(WwiseWaapiHelper::ID);
+		//	assetName = FString::Printf(TEXT("%s-%s"), *parentName, *name);
+		//	auto stringGroupId = parent->GetStringField(WwiseWaapiHelper::ID);
 
-			FGuid::ParseExact(stringGroupId, EGuidFormats::DigitsWithHyphensInBraces, groupId);
-		}
+		//	FGuid::ParseExact(stringGroupId, EGuidFormats::DigitsWithHyphensInBraces, groupId);
+		//}
 
 		auto ExistingObjectsByName = akAssetDatabase.AudioTypeMap.FindByName(assetName);
 		if (ExistingObjectsByName.Num() > 0)
@@ -340,11 +341,11 @@ void WaapiAssetSynchronizer::onChildAdded(uint64_t Id, TSharedPtr<FJsonObject> R
 		}
 		else
 		{
-			if (stringAssetType == TEXT("StateGroup") || stringAssetType == TEXT("SwitchGroup"))
+			/*if (stringAssetType == TEXT("StateGroup") || stringAssetType == TEXT("SwitchGroup"))
 			{
 				akAssetDatabase.RenameGroupValues(guidId, name, path.Replace(TEXT("\\"), TEXT("/")));
 			}
-			else if (stringAssetType == TEXT("WorkUnit"))
+			else */if (stringAssetType == TEXT("WorkUnit"))
 			{
 				const TSharedPtr<FJsonObject>* parentPtr = nullptr;
 				if (!Response->TryGetObjectField(WwiseWaapiHelper::PARENT, parentPtr) || !parentPtr)
@@ -379,8 +380,8 @@ void WaapiAssetSynchronizer::onChildAdded(uint64_t Id, TSharedPtr<FJsonObject> R
 
 void WaapiAssetSynchronizer::onChildRemoved(uint64_t Id, TSharedPtr<FJsonObject> Response)
 {
-	if (FAkAudioDevice::Get()->IsBuildingData)
-		return;
+	//if (FAkAudioDevice::Get()->IsBuildingData)
+	//	return;
 
 	AsyncTask(ENamedThreads::GameThread, [this, Response] {
 		const TSharedPtr<FJsonObject>* childObjectPtr = nullptr;
@@ -439,8 +440,8 @@ void WaapiAssetSynchronizer::onChildRemoved(uint64_t Id, TSharedPtr<FJsonObject>
 
 void WaapiAssetSynchronizer::onRenamed(uint64_t Id, TSharedPtr<FJsonObject> Response)
 {
-	if (FAkAudioDevice::Get()->IsBuildingData)
-		return;
+	//if (FAkAudioDevice::Get()->IsBuildingData)
+	//	return;
 
 	AsyncTask(ENamedThreads::GameThread, [this, Response]
 		{
@@ -485,25 +486,25 @@ void WaapiAssetSynchronizer::onRenamed(uint64_t Id, TSharedPtr<FJsonObject> Resp
 				return; // error parsing Json
 
 			FGuid groupId;
-			if (assetType == TEXT("State") || assetType == TEXT("Switch"))
-			{
-				const TSharedPtr<FJsonObject>* parentPtr = nullptr;
-				if (!resultObject->TryGetObjectField(WwiseWaapiHelper::PARENT, parentPtr) || !parentPtr)
-					return; // error parsing Json
+			//if (assetType == TEXT("State") || assetType == TEXT("Switch"))
+			//{
+			//	const TSharedPtr<FJsonObject>* parentPtr = nullptr;
+			//	if (!resultObject->TryGetObjectField(WwiseWaapiHelper::PARENT, parentPtr) || !parentPtr)
+			//		return; // error parsing Json
 
-				auto parent = *parentPtr;
-				assetName = FString::Printf(TEXT("%s-%s"), *parent->GetStringField(WwiseWaapiHelper::NAME), *newName);
+			//	auto parent = *parentPtr;
+			//	assetName = FString::Printf(TEXT("%s-%s"), *parent->GetStringField(WwiseWaapiHelper::NAME), *newName);
 
-				auto stringGroupId = parent->GetStringField(WwiseWaapiHelper::ID);
-				FGuid::ParseExact(stringGroupId, EGuidFormats::DigitsWithHyphensInBraces, groupId);
-			}
+			//	auto stringGroupId = parent->GetStringField(WwiseWaapiHelper::ID);
+			//	FGuid::ParseExact(stringGroupId, EGuidFormats::DigitsWithHyphensInBraces, groupId);
+			//}
 
-			if (assetType == TEXT("StateGroup") || assetType == TEXT("SwitchGroup"))
-			{
-				AkAssetDatabase::Get().RenameGroupValues(guidId, newName, path.Replace(TEXT("\\"), TEXT("/")));
-			}
-			else
-			{
+			//if (assetType == TEXT("StateGroup") || assetType == TEXT("SwitchGroup"))
+			//{
+			//	AkAssetDatabase::Get().RenameGroupValues(guidId, newName, path.Replace(TEXT("\\"), TEXT("/")));
+			//}
+			//else
+			//{
 				const UClass* assetClass = WaapiAssetSynchronizer::GetClassByName(assetType);
 				if (assetClass != nullptr)
 				{
@@ -513,7 +514,7 @@ void WaapiAssetSynchronizer::onRenamed(uint64_t Id, TSharedPtr<FJsonObject> Resp
 						ignoreRenames.Remove(guidId);
 					}
 				}
-			}
+			//}
 		});
 }
 
@@ -523,30 +524,34 @@ UClass* WaapiAssetSynchronizer::GetClassByName(const FString& stringAssetType)
 	{
 		return UAkAuxBus::StaticClass();
 	}
-	else if (stringAssetType == TEXT("AcousticTexture"))
-	{
-		return UAkAcousticTexture::StaticClass();
-	}
+	//else if (stringAssetType == TEXT("AcousticTexture"))
+	//{
+	//	return UAkAcousticTexture::StaticClass();
+	//}
 	else if (stringAssetType == TEXT("Event"))
 	{
 		return UAkAudioEvent::StaticClass();
 	}
-	else if (stringAssetType == TEXT("GameParameter"))
+	else if (stringAssetType == TEXT("SoundBank"))
 	{
-		return UAkRtpc::StaticClass();
+		return UAkAudioBank::StaticClass();
 	}
-	else if (stringAssetType == TEXT("State"))
-	{
-		return UAkStateValue::StaticClass();
-	}
-	else if (stringAssetType == TEXT("Switch"))
-	{
-		return UAkSwitchValue::StaticClass();
-	}
-	else if (stringAssetType == TEXT("Trigger"))
-	{
-		return UAkTrigger::StaticClass();
-	}
+	//else if (stringAssetType == TEXT("GameParameter"))
+	//{
+	//	return UAkRtpc::StaticClass();
+	//}
+	//else if (stringAssetType == TEXT("State"))
+	//{
+	//	return UAkStateValue::StaticClass();
+	//}
+	//else if (stringAssetType == TEXT("Switch"))
+	//{
+	//	return UAkSwitchValue::StaticClass();
+	//}
+	//else if (stringAssetType == TEXT("Trigger"))
+	//{
+	//	return UAkTrigger::StaticClass();
+	//}
 	return nullptr;
 }
 
@@ -627,10 +632,10 @@ void WaapiAssetSynchronizer::onAssetRenamed(const FAssetData& NewAssetData, cons
 		return;
 	}
 
-	if (assetInstance->IsA<UAkGroupValue>() || assetInstance->IsA<UAkAudioBank>())
-	{
-		return;
-	}
+	//if (assetInstance->IsA<UAkGroupValue>())
+	//{
+	//	return;
+	//}
 
 	auto newPath = NewAssetData.ObjectPath.GetPlainNameString();
 

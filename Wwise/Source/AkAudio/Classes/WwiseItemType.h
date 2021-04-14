@@ -7,6 +7,7 @@ namespace EWwiseItemType
 	enum Type
 	{
 		Event,
+		Bank,
 		AuxBus,
 		AcousticTexture,
 		State,
@@ -36,6 +37,7 @@ namespace EWwiseItemType
 
 	static const FString ItemNames[] = {
 		TEXT("Event"),
+		TEXT("SoundBank"),
 		TEXT("AuxBus"),
 		TEXT("AcousticTexture"),
 		TEXT("State"),
@@ -46,6 +48,7 @@ namespace EWwiseItemType
 	};
 	static const FString DisplayNames[] = {
 		TEXT("Events"),
+		TEXT("SoundBanks"),
 		TEXT("Busses"),
 		TEXT("VirtualAcoustics"),
 		TEXT("States"),
@@ -56,6 +59,7 @@ namespace EWwiseItemType
 	};
 	static const FString FolderNames[] = {
 		TEXT("Events"),
+		TEXT("SoundBanks"),
 		TEXT("Master-Mixer Hierarchy"),
 		TEXT("Virtual Acoustics"),
 		TEXT("States"),
@@ -66,6 +70,7 @@ namespace EWwiseItemType
 	};
 	static const FString PickerLabel[] = {
 		TEXT("Events"),
+		TEXT("Banks"),
 		TEXT("Auxiliary Busses"),
 		TEXT("Textures"),
 		TEXT("States"),
@@ -90,6 +95,7 @@ namespace EWwiseItemType
 			{TEXT("BlendContainer"), Type::BlendContainer},
 			{TEXT("Bus"), Type::Bus},
 			{TEXT("Event"), Type::Event},
+			{TEXT("Bank"), Type::Bank},
 			{TEXT("Folder"), Type::Folder},
 			{TEXT("GameParameter"), Type::GameParameter},
 			{TEXT("MotionBus"), Type::MotionBus},

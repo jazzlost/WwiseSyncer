@@ -9,22 +9,23 @@
 #include "Misc/ScopeLock.h"
 #include "UObject/SoftObjectPtr.h"
 #include "AkMediaAsset.h"
+#include "AkAssetManagementManager.h"
 
 class FAssetRegistryModule;
 class FAssetToolsModule;
-class UAkAcousticTexture;
+//class UAkAcousticTexture;
 class UAkAudioBank;
 class UAkAudioEvent;
 class UAkAudioType;
 class UAkAuxBus;
-class UAkGroupValue;
-class UAkInitBank;
-class UAkMediaAsset;
-class UAkRtpc;
+//class UAkGroupValue;
+//class UAkInitBank;
+//class UAkMediaAsset;
+//class UAkRtpc;
 class UAkSettings;
-class UAkStateValue;
-class UAkSwitchValue;
-class UAkTrigger;
+//class UAkStateValue;
+//class UAkSwitchValue;
+//class UAkTrigger;
 
 struct FAssetData;
 struct FAssetRenameData;
@@ -36,54 +37,61 @@ struct AkAssetTraits
 	static const FString BaseFolder() { return ""; };
 };
 
-template<>
-struct AkAssetTraits<UAkAcousticTexture>
-{
-	static const FString Name() { return "AcousticTexture"; }
-	static const FString BaseFolder() { return "Virtual_Acoustics"; }
-};
+//template<>
+//struct AkAssetTraits<UAkAcousticTexture>
+//{
+//	static const FString Name() { return "AcousticTexture"; }
+//	static const FString BaseFolder() { return "Virtual_Acoustics"; }
+//};
 
 template<>
 struct AkAssetTraits<UAkAudioEvent>
 {
 	static const FString Name() { return "Event"; }
-	static const FString BaseFolder() { return "Events"; }
+	static const FString BaseFolder() { return "WwiseEvent"; }
+};
+
+template<>
+struct AkAssetTraits<UAkAudioBank>
+{
+	static const FString Name() { return "Bank"; }
+	static const FString BaseFolder() { return "WwiseBank"; }
 };
 
 template<>
 struct AkAssetTraits<UAkAuxBus>
 {
 	static const FString Name() { return "AuxBus"; }
-	static const FString BaseFolder() { return "Master-Mixer_Hierarchy"; }
+	static const FString BaseFolder() { return "WwiseAuxBus"; }
 };
 
-template<>
-struct AkAssetTraits<UAkRtpc>
-{
-	static const FString Name() { return "GameParameter"; }
-	static const FString BaseFolder() { return "Game_Parameters"; }
-};
+//template<>
+//struct AkAssetTraits<UAkRtpc>
+//{
+//	static const FString Name() { return "GameParameter"; }
+//	static const FString BaseFolder() { return "Game_Parameters"; }
+//};
 
-template<>
-struct AkAssetTraits<UAkStateValue>
-{
-	static const FString Name() { return "State"; }
-	static const FString BaseFolder() { return "States"; }
-};
+//template<>
+//struct AkAssetTraits<UAkStateValue>
+//{
+//	static const FString Name() { return "State"; }
+//	static const FString BaseFolder() { return "States"; }
+//};
 
-template<>
-struct AkAssetTraits<UAkSwitchValue>
-{
-	static const FString Name() { return "Switch"; }
-	static const FString BaseFolder() { return "Switches"; }
-};
-
-template<>
-struct AkAssetTraits<UAkTrigger>
-{
-	static const FString Name() { return "Trigger"; }
-	static const FString BaseFolder() { return "Triggers"; }
-};
+//template<>
+//struct AkAssetTraits<UAkSwitchValue>
+//{
+//	static const FString Name() { return "Switch"; }
+//	static const FString BaseFolder() { return "Switches"; }
+//};
+//
+//template<>
+//struct AkAssetTraits<UAkTrigger>
+//{
+//	static const FString Name() { return "Trigger"; }
+//	static const FString BaseFolder() { return "Triggers"; }
+//};
 
 class AkAssetDatabase
 {
@@ -103,17 +111,17 @@ public:
 	
 	void RenameAsset(const UClass* Klass, const FGuid& Id, const FString& Name, const FString& AssetName, const FString& RelativePath, const FString& GroupId);
 
-	void RenameGroupValues(const FGuid& GroupId, const FString& GroupName, const FString& Path);
+	//void RenameGroupValues(const FGuid& GroupId, const FString& GroupName, const FString& Path);
 	void DeleteAsset(const FGuid& Id);
 	void DeleteAssets(const TSet<FGuid>& AssetsId);
 
-	void FillAssetsToDelete(UAkAudioType* Asset, TArray<FAssetData>& AssetDataToDelete);
+	//void FillAssetsToDelete(UAkAudioType* Asset, TArray<FAssetData>& AssetDataToDelete);
 
 	void MoveAllAssets(const FString& OldBaseAssetPath, const FString& NewBaseAssetPath);
 
 	void MoveWorkUnit(const FString& OldWorkUnitPath, const FString& NewWorkUnitPath);
 
-	void CreateInitBankIfNeeded();
+	//void CreateInitBankIfNeeded();
 
 	void FixUpRedirectors(const FString& AssetPackagePath);
 
@@ -125,7 +133,12 @@ public:
 
 	bool CanBeDropped(const FAssetData& AssetData, FName PackagePath, CanBeDroppedSource Source) const;
 
-	bool IsInited() const { return InitBank != nullptr; }
+	bool IsInited() const { return true; }
+
+	//Assign Ref Bank For Events
+	void AssignBank();
+
+	class AkAssetManagementManager* GetAssetManagementManager() { return &assetManagementManager; }
 
 public:
 	template<typename AkAssetType>
@@ -203,18 +216,23 @@ public:
 		}
 	};
 
-	AkTypeMap<UAkAcousticTexture> AcousticTextureMap;
+	//AkTypeMap<UAkAcousticTexture> AcousticTextureMap;
 	AkTypeMap<UAkAudioEvent> EventMap;
 	AkTypeMap<UAkAuxBus> AuxBusMap;
 	AkTypeMap<UAkAudioBank> BankMap;
-	AkTypeMap<UAkGroupValue> GroupValueMap;
-	AkTypeMap<UAkTrigger> TriggerMap;
-	AkTypeMap<UAkRtpc> RtpcMap;
+	//AkTypeMap<UAkGroupValue> GroupValueMap;
+	//AkTypeMap<UAkTrigger> TriggerMap;
+	//AkTypeMap<UAkRtpc> RtpcMap;
 
 	AkTypeMap<UAkAudioType> AudioTypeMap;
 	TSet<FGuid> PendingAssetCreates;
 	mutable FCriticalSection InitBankLock;
 	UAkInitBank* InitBank = nullptr;
+	
+	//Bank Name To Ref Events Name
+	TMap<FString, TArray<FString>> BankToEventsMap;
+	TMap<FString, UAkAudioEvent*> EventsNameMap;
+	TMap<FString, UAkAudioBank*> BanksNameMap;
 
 private:
 	AkAssetDatabase();
@@ -224,8 +242,8 @@ private:
 	void onAssetAdded(const FAssetData& NewAssetData);
 	void onAssetRemoved(const FAssetData& RemovedAssetData);
 	void onAssetRenamed(const FAssetData& NewAssetData, const FString& OldPath);
-	void processMediaToDelete(UObject* Asset, const TArray<TSoftObjectPtr<UAkMediaAsset>>& MediaList, TArray<FAssetData>& AssetDataToDelete);
-	void renameLocalizedAssets(const UAkAudioEvent* akAudioEvent, const FString& parentPath, const FString& AssetName, TArray<FAssetRenameData>& assetsToRename);
+	//void processMediaToDelete(UObject* Asset, const TArray<TSoftObjectPtr<UAkMediaAsset>>& MediaList, TArray<FAssetData>& AssetDataToDelete);
+	//void renameLocalizedAssets(const UAkAudioEvent* akAudioEvent, const FString& parentPath, const FString& AssetName, TArray<FAssetRenameData>& assetsToRename);
 	void removeEmptyFolders(const TArray<FAssetRenameData>& FoldersToCheck);
 	
 private:
@@ -238,5 +256,7 @@ private:
 	FTickerDelegate OnTick;
 	FDelegateHandle TickDelegateHandle;
 	bool Tick(float DeltaTime);
+
+	AkAssetManagementManager assetManagementManager;
 
 };

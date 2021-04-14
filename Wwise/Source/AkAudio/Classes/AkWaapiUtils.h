@@ -93,6 +93,7 @@ public:
 	static const FString VOLUME;
 	static const FString WHERE;
 	static const FString WORKUNIT_TYPE;
+	static const FString GENERATE_ALLBANKS_ACLOSE;
 };
 
 bool CallWappiGetPropertySate(const FString& ItemID, const FString& ItemProperty, TSharedPtr<FJsonObject>& ItemInfoResult); 

@@ -141,11 +141,11 @@ bool AkEventBasedToolBehavior::AkAssetDatabase_Remove(AkAssetDatabase* Instance,
 		}
 	}
 
-	if (auto acousticTexture = Cast<UAkAcousticTexture>(AudioType))
+/*	if (auto acousticTexture = Cast<UAkAcousticTexture>(AudioType))
 	{
 		Instance->AcousticTextureMap.Remove(Id);
 	}
-	else if (auto audioEvent = Cast<UAkAudioEvent>(AudioType))
+	else */if (auto audioEvent = Cast<UAkAudioEvent>(AudioType))
 	{
 		Instance->EventMap.Remove(Id);
 	}
@@ -153,26 +153,26 @@ bool AkEventBasedToolBehavior::AkAssetDatabase_Remove(AkAssetDatabase* Instance,
 	{
 		Instance->AuxBusMap.Remove(Id);
 	}
-	else if (auto groupValue = Cast<UAkGroupValue>(AudioType))
-	{
-		Instance->GroupValueMap.Remove(Id);
-	}
-	else if (auto trigger = Cast<UAkTrigger>(AudioType))
-	{
-		Instance->TriggerMap.Remove(Id);
-	}
-	else if (auto rtpc = Cast<UAkRtpc>(AudioType))
-	{
-		Instance->RtpcMap.Remove(Id);
-	}
+	//else if (auto groupValue = Cast<UAkGroupValue>(AudioType))
+	//{
+	//	Instance->GroupValueMap.Remove(Id);
+	//}
+	//else if (auto trigger = Cast<UAkTrigger>(AudioType))
+	//{
+	//	Instance->TriggerMap.Remove(Id);
+	//}
+	//else if (auto rtpc = Cast<UAkRtpc>(AudioType))
+	//{
+	//	Instance->RtpcMap.Remove(Id);
+	//}
 	else if (auto audioBank = Cast<UAkAudioBank>(AudioType))
 	{
 		Instance->BankMap.Remove(Id);
 	}
-	else if (auto initBank = Cast<UAkInitBank>(AudioType))
-	{
-		Instance->InitBank = nullptr;
-	}
+	//else if (auto initBank = Cast<UAkInitBank>(AudioType))
+	//{
+	//	Instance->InitBank = nullptr;
+	//}
 	else
 	{
 		return false;

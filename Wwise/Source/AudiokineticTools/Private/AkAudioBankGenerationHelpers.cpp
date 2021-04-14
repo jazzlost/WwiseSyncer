@@ -92,10 +92,10 @@ namespace AkAudioBankGenerationHelper
 			.SizingRule(ESizingRule::FixedSize)
 			.FocusWhenFirstShown(true);
 
-		if (!AkToolBehavior::Get()->CreateSoundDataWidget(WidgetWindow, SoundBanks, ProjectSave))
-		{
-			return;
-		}
+		//if (!AkToolBehavior::Get()->CreateSoundDataWidget(WidgetWindow, SoundBanks, ProjectSave))
+		//{
+		//	return;
+		//}
 
 		// This creates a windows that blocks the rest of the UI. You can only interact with the "Generate SoundBanks" window.
 		// If you choose to use this, comment the rest of the function.
