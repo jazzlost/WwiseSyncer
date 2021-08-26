@@ -813,9 +813,9 @@ class FAudiokineticToolsModule : public IAudiokineticTools
 	TSharedRef<FExtender> ExtendBuildContextMenuForAudiokinetic(const TSharedRef<FUICommandList> CommandList)
 	{
 		TSharedPtr<FExtender> Extender = MakeShared<FExtender>();
-		Extender->AddMenuExtension("LevelEditorGeometry", EExtensionHook::After, CommandList, FMenuExtensionDelegate::CreateLambda([this](FMenuBuilder& MenuBuilder)
-		{
-			MenuBuilder.BeginSection("Audiokinetic", LOCTEXT("Audiokinetic", "Audiokinetic"));
+		//Extender->AddMenuExtension("LevelEditorGeometry", EExtensionHook::After, CommandList, FMenuExtensionDelegate::CreateLambda([this](FMenuBuilder& MenuBuilder)
+		//{
+			/*MenuBuilder.BeginSection("Audiokinetic", LOCTEXT("Audiokinetic", "Audiokinetic"));
 			{
 				FUIAction GenerateSoundDataUIAction;
 				GenerateSoundDataUIAction.ExecuteAction.BindStatic(&AkAudioBankGenerationHelper::CreateGenerateSoundDataWindow, (TArray<TWeakObjectPtr<UAkAudioBank>>*)nullptr, false);
@@ -833,24 +833,24 @@ class FAudiokineticToolsModule : public IAudiokineticTools
 					LOCTEXT("AkAudioBank_ClearSoundDataTooltip", "Clear Wwise Sound Data."),
 					FSlateIcon(),
 					ClearSoundDataUIAction
-				);
+				);*/
 
-				if (AkUnrealHelper::IsUsingEventBased())
-				{
-					FUIAction ForceAssetSynchronizationUIAction;
-					ForceAssetSynchronizationUIAction.ExecuteAction.BindRaw(&assetManagementManager, &AkAssetManagementManager::DoAssetSynchronization);
+			//	if (AkUnrealHelper::IsUsingEventBased())
+			//	{
+			//		FUIAction ForceAssetSynchronizationUIAction;
+			//		ForceAssetSynchronizationUIAction.ExecuteAction.BindRaw(&assetManagementManager, &AkAssetManagementManager::DoAssetSynchronization);
 
-					MenuBuilder.AddMenuEntry(
-						LOCTEXT("AkAudioMenu_ForceAssetSynchronization", "Force Asset Synchronization"),
-						LOCTEXT("AkAudioMenu_ForceAssetSynchronizationTooltip", "Force synchronization of assets from the Wwise project by parsing the work units"),
-						FSlateIcon(),
-						ForceAssetSynchronizationUIAction
-					);
-				}
-			}
-			MenuBuilder.EndSection();
+			//		MenuBuilder.AddMenuEntry(
+			//			LOCTEXT("AkAudioMenu_ForceAssetSynchronization", "Force Asset Synchronization"),
+			//			LOCTEXT("AkAudioMenu_ForceAssetSynchronizationTooltip", "Force synchronization of assets from the Wwise project by parsing the work units"),
+			//			FSlateIcon(),
+			//			ForceAssetSynchronizationUIAction
+			//		);
+			//	}
+			//}
+			//MenuBuilder.EndSection();
 
-		}));
+		//}));
 		return Extender.ToSharedRef();
 	}
 

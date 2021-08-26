@@ -48,7 +48,6 @@ bool WwiseWorkUnitParser::Parse()
 	}
 	visitor->End();
 
-
 	return true;
 }
 
